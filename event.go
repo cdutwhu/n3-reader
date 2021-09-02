@@ -1,12 +1,17 @@
 package n3reader
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 type IFileReaderEvent interface {
-	OnCreateWrite(path, meta string, t time.Time)
+	OnCreate(path, meta string, t time.Time)
+	OnWrite(path, meta string, t time.Time)
+	// OnCreateWrite(path, meta string, t time.Time)
 	OnDelete(path, meta string, t time.Time)
 	OnError(err error, t time.Time)
 	OnClose(t time.Time)
@@ -14,12 +19,32 @@ type IFileReaderEvent interface {
 
 type dftEvent struct{}
 
-func (e *dftEvent) OnCreateWrite(path, meta string, t time.Time) {
-	fmt.Printf("\nfile: %s\nmodified: %s\n", path, t)
+func (e *dftEvent) OnCreate(path, meta string, t time.Time) {
+	m := make(map[string]interface{})
+	json.Unmarshal([]byte(meta), &m)
+	fmt.Printf("\nfile: %s\n[Created]: %s\n", path, t)
+	spew.Dump(m)
 }
 
+func (e *dftEvent) OnWrite(path, meta string, t time.Time) {
+	m := make(map[string]interface{})
+	json.Unmarshal([]byte(meta), &m)
+	fmt.Printf("\nfile: %s\n[Modified]: %s\n", path, t)
+	spew.Dump(m)
+}
+
+// func (e *dftEvent) OnCreateWrite(path, meta string, t time.Time) {
+// 	m := make(map[string]interface{})
+// 	json.Unmarshal([]byte(meta), &m)
+// 	fmt.Printf("\nfile: %s\n[Created/Modified]: %s\n", path, t)
+// 	spew.Dump(m)
+// }
+
 func (e *dftEvent) OnDelete(path, meta string, t time.Time) {
-	fmt.Printf("\nfile: %s\ndeleted: %s\n", path, t)
+	m := make(map[string]interface{})
+	json.Unmarshal([]byte(meta), &m)
+	fmt.Printf("\nfile: %s\n[Deleted]: %s\n", path, t)
+	spew.Dump(m)
 }
 
 func (e *dftEvent) OnError(err error, t time.Time) {

@@ -50,19 +50,26 @@ func (fr *FileReader) Start() error {
 			select {
 			case event := <-fr.watcher.Event:
 				if !event.IsDir() {
+					var (
+						path = event.Path
+						meta = fr.meta(event.Path)
+					)
 					switch event.Op {
 					case watcher.Remove:
-						fr.Event.OnDelete(event.Path, fr.meta(event.Path), time.Now())
+						fr.Event.OnDelete(path, meta, time.Now())
 
-					case watcher.Write, watcher.Create:
-						fr.Event.OnCreateWrite(event.Path, fr.meta(event.Path), event.ModTime())
+					case watcher.Create:
+						fr.Event.OnCreate(path, meta, event.ModTime())
+
+					case watcher.Write:
+						fr.Event.OnWrite(path, meta, event.ModTime())
 					}
 				}
 
 			case err := <-fr.watcher.Error:
 				fr.Event.OnError(err, time.Now())
 				return
-				
+
 			case <-fr.watcher.Closed:
 				fr.Event.OnClose(time.Now())
 				return
