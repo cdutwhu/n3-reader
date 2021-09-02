@@ -1,22 +1,22 @@
-package n3reader
+package main
 
 import (
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
-	"testing"
+
+	n3r "github.com/cdutwhu/n3-reader"
 )
 
-func TestNewFileReader(t *testing.T) {
-
-	opts := []Option{
-		OptID(""),
-		OptFormat("json"),
-		OptName("Reader"),
-		OptWatcher("", "json", "1s", false, false, ""),
+func main() {
+	opts := []n3r.Option{
+		n3r.OptID(""),
+		n3r.OptFormat("json"),
+		n3r.OptName(""),
+		n3r.OptWatcher("", "json", "100ms", false, false, ""),
 	}
-	fr, err := NewFileReader(opts...)
+	fr, err := n3r.NewFileReader(opts...)
 	if err != nil {
 		panic(err)
 	}

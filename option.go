@@ -1,7 +1,9 @@
 package n3reader
 
 import (
+	"crypto/md5"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,10 +11,23 @@ import (
 	"time"
 
 	goio "github.com/digisan/gotk/io"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/radovskyb/watcher"
 )
+
+func SelfMD5() string {
+	f, err := os.Open(os.Args[0])
+	if err != nil {
+		panic(err)
+	}
+	h := md5.New() // sha1.New() // sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+var selfId = SelfMD5()
 
 type Option func(*FileReader) error
 
@@ -25,29 +40,33 @@ func (fr *FileReader) setOption(options ...Option) error {
 	return nil
 }
 
-func ID(id string) Option {
+func OptID(id string) Option {
 	return func(fr *FileReader) error {
 		if id != "" {
 			fr.id = id
 			return nil
 		}
-		fr.id = uuid.New().String()
+		fr.id = selfId
 		return nil
 	}
 }
 
-func Name(name string) Option {
+func OptName(name string) Option {
 	return func(fr *FileReader) error {
 		if name != "" {
 			fr.name = name
 			return nil
 		}
-		fr.name = "file-reader"
+		name, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+		fr.name = fmt.Sprintf("%s-reader-%s", name, selfId[:4])
 		return nil
 	}
 }
 
-func Format(format string) Option {
+func OptFormat(format string) Option {
 	return func(fr *FileReader) error {
 		if format == "" {
 			return errors.New("input format cannot be empty")
@@ -65,7 +84,7 @@ func Format(format string) Option {
 	}
 }
 
-func Watcher(folder string, fileSuffix string, interval string, recursive bool, inclHidden bool, ignore string) Option {
+func OptWatcher(folder string, fileSuffix string, interval string, recursive bool, inclHidden bool, ignore string) Option {
 	return func(fr *FileReader) error {
 
 		fr.watcher = watcher.New()
