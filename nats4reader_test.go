@@ -1,6 +1,8 @@
 package n3reader
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	fr "github.com/cdutwhu/n3-reader/file-reader"
@@ -16,7 +18,13 @@ func TestNewN3Reader(t *testing.T) {
 		}
 		if freader, err := fr.NewFileReader(opts...); err == nil {
 			freader.Event = NewN3ReaderEvent(n3r)
-			freader.StartWait()
+			cleanup := func(folder string) {
+				if err := os.RemoveAll(folder); err != nil {
+					panic(err)
+				}
+				fmt.Printf("%s is removed\n", folder)
+			}
+			freader.StartWait(cleanup)
 		}
 	}
 }

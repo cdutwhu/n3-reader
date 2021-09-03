@@ -1,11 +1,12 @@
 package filereader
 
 import (
+	"fmt"
+	"os"
 	"testing"
 )
 
 func TestNewFileReader(t *testing.T) {
-
 	opts := []Option{
 		OptID(""),
 		OptFormat("json"),
@@ -16,6 +17,11 @@ func TestNewFileReader(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
-	fr.StartWait()
+	cleanup := func(folder string) {
+		if err := os.RemoveAll(folder); err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s is removed\n", folder)
+	}
+	fr.StartWait(cleanup)
 }

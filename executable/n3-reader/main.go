@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	fr "github.com/cdutwhu/n3-reader/file-reader"
 )
 
@@ -15,6 +18,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	fr.StartWait()
+	cleanup := func(folder string) {
+		if err := os.RemoveAll(folder); err != nil {
+			panic(err)
+		}
+		fmt.Printf("%s is removed\n", folder)
+	}
+	fr.StartWait(cleanup)
 }

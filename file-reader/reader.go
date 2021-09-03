@@ -42,8 +42,9 @@ func NewFileReader(options ...Option) (*Reader, error) {
 	return fr, nil
 }
 
-func (fr *Reader) Close() {
-	fr.watcher.Close()
+func (fr *Reader) Close(cleanup func(watched string)) {
+	fr.watcher.Close() // stop watcher
+	cleanup(fr.watchFolder)
 }
 
 func (fr *Reader) start() error {
@@ -84,7 +85,7 @@ func (fr *Reader) start() error {
 	return fr.watcher.Start(fr.interval)
 }
 
-func (fr *Reader) StartWait() {
+func (fr *Reader) StartWait(cleanup func(watched string)) {
 
 	// signal handler for shutdown
 	closed := make(chan struct{})
@@ -93,9 +94,9 @@ func (fr *Reader) StartWait() {
 	go func() {
 		<-c
 		fmt.Println("\nreader shutting down")
-		fr.Close()
+		fr.Close(cleanup) // stop watcher
 		fmt.Println("reader closed")
-		close(closed)
+		close(closed) // release process
 	}()
 
 	fr.start()

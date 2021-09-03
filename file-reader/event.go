@@ -3,7 +3,6 @@ package filereader
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -46,5 +45,4 @@ func (e *dftEvent) OnError(err error, t time.Time) {
 
 func (e *dftEvent) OnClose(t time.Time) {
 	fmt.Println("\tFile-Watcher closed at ", t)
-	os.RemoveAll("./watched")
 }

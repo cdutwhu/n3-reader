@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	dfltWatched  = "./watched"
+	dfltWatched  = "./sample-watched"
 	dfltInterval = "10s"
 )
 
