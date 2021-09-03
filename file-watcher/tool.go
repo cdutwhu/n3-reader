@@ -1,4 +1,4 @@
-package filereader
+package filewatcher
 
 import (
 	"crypto/md5"

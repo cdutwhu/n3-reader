@@ -1,4 +1,4 @@
-package filereader
+package filewatcher
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-type IReaderEvent interface {
+type IWatchEvent interface {
 	OnCreate(path, meta string, t time.Time)
 	OnWrite(path, meta string, t time.Time)
 	OnDelete(path, meta string, t time.Time)

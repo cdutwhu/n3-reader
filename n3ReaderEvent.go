@@ -36,5 +36,7 @@ func (event *n3ReaderEvent) OnError(err error, t time.Time) {
 }
 
 func (event *n3ReaderEvent) OnClose(t time.Time) {
-	event.sc.Close()
+	if event.sc != nil {
+		event.sc.Close()
+	}
 }

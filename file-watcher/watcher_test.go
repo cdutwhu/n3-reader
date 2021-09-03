@@ -1,4 +1,4 @@
-package filereader
+package filewatcher
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func TestNewFileReader(t *testing.T) {
 		OptName("Reader"),
 		OptWatcher("", "json", "1s", false, false, ""),
 	}
-	fr, err := NewFileReader(opts...)
+	fw, err := NewFileWatcher(opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -23,5 +23,5 @@ func TestNewFileReader(t *testing.T) {
 		}
 		fmt.Printf("%s is removed\n", folder)
 	}
-	fr.StartWait(cleanup)
+	fw.StartWait(cleanup)
 }

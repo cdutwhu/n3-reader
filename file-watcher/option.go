@@ -1,4 +1,4 @@
-package filereader
+package filewatcher
 
 import (
 	"fmt"
@@ -20,11 +20,11 @@ const (
 
 var selfId = SelfMD5()
 
-type Option func(*Reader) error
+type Option func(*Watcher) error
 
-func (fr *Reader) setOption(options ...Option) error {
+func (w *Watcher) setOption(options ...Option) error {
 	for _, opt := range options {
-		if err := opt(fr); err != nil {
+		if err := opt(w); err != nil {
 			return err
 		}
 	}
@@ -32,33 +32,33 @@ func (fr *Reader) setOption(options ...Option) error {
 }
 
 func OptID(id string) Option {
-	return func(fr *Reader) error {
+	return func(w *Watcher) error {
 		if id != "" {
-			fr.id = id
+			w.id = id
 			return nil
 		}
-		fr.id = selfId
+		w.id = selfId
 		return nil
 	}
 }
 
 func OptName(name string) Option {
-	return func(fr *Reader) error {
+	return func(w *Watcher) error {
 		if name != "" {
-			fr.name = name
+			w.name = name
 			return nil
 		}
 		name, err := os.Hostname()
 		if err != nil {
 			return err
 		}
-		fr.name = fmt.Sprintf("%s-reader-%s", name, selfId[:4])
+		w.name = fmt.Sprintf("%s-reader-%s", name, selfId[:4])
 		return nil
 	}
 }
 
 func OptFormat(format string) Option {
-	return func(fr *Reader) error {
+	return func(w *Watcher) error {
 		if format == "" {
 			return errors.New("input format cannot be empty")
 		}
@@ -67,7 +67,7 @@ func OptFormat(format string) Option {
 		format = strings.Trim(format, ".") // remove any excess . chars
 		switch format {
 		case "csv", "json":
-			fr.format = format
+			w.format = format
 			return nil
 		default:
 			return fmt.Errorf("input format [%s] not supported (must be one of csv|json)", format)
@@ -76,13 +76,13 @@ func OptFormat(format string) Option {
 }
 
 func OptWatcher(folder string, fileSuffix string, interval string, recursive bool, inclHidden bool, ignore string) Option {
-	return func(fr *Reader) error {
+	return func(w *Watcher) error {
 
-		fr.watcher = watcher.New()
+		w.watcher = watcher.New()
 
 		// dot file handling
-		fr.watcher.IgnoreHiddenFiles(!inclHidden)
-		fr.inclHidden = inclHidden
+		w.watcher.IgnoreHiddenFiles(!inclHidden)
+		w.inclHidden = inclHidden
 
 		// If no files/folders were specified, watch the current directory.
 		if folder == "" {
@@ -96,7 +96,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 
 		// must create folder if it does not exist. otherwise, panic
 		goio.MustCreateDir(folder)
-		fr.watchFolder = folder
+		w.watchFolder = folder
 
 		// Get any of the paths to ignore.
 		ignoredPaths := strings.Split(ignore, ",")
@@ -105,33 +105,33 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 			if trimmed == "" {
 				continue
 			}
-			err := fr.watcher.Ignore(trimmed)
+			err := w.watcher.Ignore(trimmed)
 			if err != nil {
 				return errors.Wrap(err, "unable to add ignore folder "+trimmed)
 			}
 		}
-		fr.ignore = ignore
+		w.ignore = ignore
 
 		// Only files that match the regular expression for file suffix during file listings
 		// will be watched.
 		if fileSuffix != "" {
 			trimSuffix := strings.Trim(fileSuffix, ".")
 			r := regexp.MustCompile("([^\\s]+(\\.(?i)(" + trimSuffix + "))$)")
-			fr.watcher.AddFilterHook(watcher.RegexFilterHook(r, false))
+			w.watcher.AddFilterHook(watcher.RegexFilterHook(r, false))
 		}
-		fr.watchFileExt = fileSuffix
+		w.watchFileExt = fileSuffix
 
 		// Add the watch folder specified.
 		if recursive {
-			if err := fr.watcher.AddRecursive(folder); err != nil {
+			if err := w.watcher.AddRecursive(folder); err != nil {
 				return errors.Wrap(err, "unable to add watch folder "+folder+" recursively")
 			}
 		} else {
-			if err := fr.watcher.Add(folder); err != nil {
+			if err := w.watcher.Add(folder); err != nil {
 				return errors.Wrap(err, "unable to add watch folder "+folder)
 			}
 		}
-		fr.recursive = recursive
+		w.recursive = recursive
 
 		// Parse the interval string into a time.Duration.
 		if interval == "" {
@@ -141,7 +141,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 		if err != nil {
 			return errors.Wrap(err, "unable to parse watcher interval as duration")
 		}
-		fr.interval = parsedInterval
+		w.interval = parsedInterval
 
 		return nil
 	}
