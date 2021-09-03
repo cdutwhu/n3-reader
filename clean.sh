@@ -4,6 +4,8 @@ set -e
 
 for f in $(find ./ -name '*.log' -or -name '*.doc'); do rm $f; done
 
+rm -rf ./watched ./file-reader/watched
+
 # delete all Linux binary files
 find . -type f -executable -exec sh -c "file -i '{}' | grep -q 'x-executable; charset=binary'" \; -print | xargs rm -f
 # delete all Mac binary files

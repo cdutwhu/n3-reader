@@ -1,17 +1,17 @@
-package n3reader
+package filereader
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
 )
 
-type IFileReaderEvent interface {
+type IReaderEvent interface {
 	OnCreate(path, meta string, t time.Time)
 	OnWrite(path, meta string, t time.Time)
-	// OnCreateWrite(path, meta string, t time.Time)
 	OnDelete(path, meta string, t time.Time)
 	OnError(err error, t time.Time)
 	OnClose(t time.Time)
@@ -33,13 +33,6 @@ func (e *dftEvent) OnWrite(path, meta string, t time.Time) {
 	spew.Dump(m)
 }
 
-// func (e *dftEvent) OnCreateWrite(path, meta string, t time.Time) {
-// 	m := make(map[string]interface{})
-// 	json.Unmarshal([]byte(meta), &m)
-// 	fmt.Printf("\nfile: %s\n[Created/Modified]: %s\n", path, t)
-// 	spew.Dump(m)
-// }
-
 func (e *dftEvent) OnDelete(path, meta string, t time.Time) {
 	m := make(map[string]interface{})
 	json.Unmarshal([]byte(meta), &m)
@@ -53,4 +46,5 @@ func (e *dftEvent) OnError(err error, t time.Time) {
 
 func (e *dftEvent) OnClose(t time.Time) {
 	fmt.Println("\tFile-Watcher closed at ", t)
+	os.RemoveAll("./watched")
 }

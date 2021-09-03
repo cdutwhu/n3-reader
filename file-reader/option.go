@@ -1,9 +1,7 @@
-package n3reader
+package filereader
 
 import (
-	"crypto/md5"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,23 +13,16 @@ import (
 	"github.com/radovskyb/watcher"
 )
 
-func SelfMD5() string {
-	f, err := os.Open(os.Args[0])
-	if err != nil {
-		panic(err)
-	}
-	h := md5.New() // sha1.New() // sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf("%x", h.Sum(nil))
-}
+const (
+	dfltWatched  = "./watched"
+	dfltInterval = "10s"
+)
 
 var selfId = SelfMD5()
 
-type Option func(*FileReader) error
+type Option func(*Reader) error
 
-func (fr *FileReader) setOption(options ...Option) error {
+func (fr *Reader) setOption(options ...Option) error {
 	for _, opt := range options {
 		if err := opt(fr); err != nil {
 			return err
@@ -41,7 +32,7 @@ func (fr *FileReader) setOption(options ...Option) error {
 }
 
 func OptID(id string) Option {
-	return func(fr *FileReader) error {
+	return func(fr *Reader) error {
 		if id != "" {
 			fr.id = id
 			return nil
@@ -52,7 +43,7 @@ func OptID(id string) Option {
 }
 
 func OptName(name string) Option {
-	return func(fr *FileReader) error {
+	return func(fr *Reader) error {
 		if name != "" {
 			fr.name = name
 			return nil
@@ -67,7 +58,7 @@ func OptName(name string) Option {
 }
 
 func OptFormat(format string) Option {
-	return func(fr *FileReader) error {
+	return func(fr *Reader) error {
 		if format == "" {
 			return errors.New("input format cannot be empty")
 		}
@@ -85,7 +76,7 @@ func OptFormat(format string) Option {
 }
 
 func OptWatcher(folder string, fileSuffix string, interval string, recursive bool, inclHidden bool, ignore string) Option {
-	return func(fr *FileReader) error {
+	return func(fr *Reader) error {
 
 		fr.watcher = watcher.New()
 
@@ -97,7 +88,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 		if folder == "" {
 			var osErr error
 			folder, osErr = os.Getwd()
-			folder = filepath.Join(folder, "watched")
+			folder = filepath.Join(folder, dfltWatched)
 			if osErr != nil {
 				return errors.Wrap(osErr, "no watch folder specified, and cannot determine current working directory")
 			}
@@ -144,7 +135,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 
 		// Parse the interval string into a time.Duration.
 		if interval == "" {
-			interval = "10m"
+			interval = dfltInterval
 		}
 		parsedInterval, err := time.ParseDuration(interval)
 		if err != nil {

@@ -1,13 +1,16 @@
-package n3reader
+package filereader
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/radovskyb/watcher"
 )
 
-type FileReader struct {
+type Reader struct {
 	id           string // meta
 	name         string // meta
 	format       string // meta
@@ -18,10 +21,10 @@ type FileReader struct {
 	ignore       string
 	watcher      *watcher.Watcher
 	interval     time.Duration
-	Event        IFileReaderEvent
+	Event        IReaderEvent
 }
 
-func (fr *FileReader) meta(filename string) string {
+func (fr *Reader) meta(filename string) string {
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
 		"ReaderName": "%s",
@@ -31,19 +34,19 @@ func (fr *FileReader) meta(filename string) string {
 	}`, fr.id, fr.name, fr.format, filename, time.Now().UTC().Format(time.RFC3339))
 }
 
-func NewFileReader(options ...Option) (*FileReader, error) {
-	fr := &FileReader{Event: &dftEvent{}}
+func NewFileReader(options ...Option) (*Reader, error) {
+	fr := &Reader{Event: &dftEvent{}}
 	if err := fr.setOption(options...); err != nil {
 		return nil, err
 	}
 	return fr, nil
 }
 
-func (fr *FileReader) Close() {
+func (fr *Reader) Close() {
 	fr.watcher.Close()
 }
 
-func (fr *FileReader) Start() error {
+func (fr *Reader) start() error {
 
 	go func() {
 		for {
@@ -79,4 +82,22 @@ func (fr *FileReader) Start() error {
 
 	// Start the watching process.
 	return fr.watcher.Start(fr.interval)
+}
+
+func (fr *Reader) StartWait() {
+
+	// signal handler for shutdown
+	closed := make(chan struct{})
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("\nreader shutting down")
+		fr.Close()
+		fmt.Println("reader closed")
+		close(closed)
+	}()
+
+	fr.start()
+	<-closed
 }
