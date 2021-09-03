@@ -26,7 +26,7 @@ func (n3r *Nats4Reader) setOption(options ...Option) error {
 // set the nats server name or ip address
 // empty string will result in localhost as defalt hostname
 //
-func NatsHostName(hostName string) Option {
+func OptNatsHostName(hostName string) Option {
 	return func(n4r *Nats4Reader) error {
 		if hostName != "" {
 			n4r.host = hostName
@@ -40,7 +40,7 @@ func NatsHostName(hostName string) Option {
 // set the nats server communication port
 // port value of 0 or less will result in default nats port 4222
 //
-func NatsPort(port int) Option {
+func OptNatsPort(port int) Option {
 	return func(n4r *Nats4Reader) error {
 		if port > 0 {
 			n4r.port = port
@@ -55,7 +55,7 @@ func NatsPort(port int) Option {
 // set the nats streaming server cluster name.
 // empty string will result in nats default of 'test-cluster'
 //
-func NatsClusterName(clusterName string) Option {
+func OptNatsClusterName(clusterName string) Option {
 	return func(n4r *Nats4Reader) error {
 		if clusterName != "" {
 			n4r.cluster = clusterName
@@ -69,7 +69,7 @@ func NatsClusterName(clusterName string) Option {
 // set the name of the nats topic to publish data once parsed
 // from the input files
 //
-func Topic(tName string) Option {
+func OptTopic(tName string) Option {
 	return func(n4r *Nats4Reader) error {
 		if tName == "" {
 			return errors.New("must have Topic (nats topic to which reader will publish parsed data).")
@@ -90,7 +90,7 @@ func Topic(tName string) Option {
 // set if number of filehandles on OS is a problem
 // defaults to 10
 //
-func ConcurrentFiles(n int) Option {
+func OptConcurrentFiles(n int) Option {
 	return func(n4r *Nats4Reader) error {
 		if n == 0 {
 			n4r.nConcurrent = dfltConcurrent // safe default

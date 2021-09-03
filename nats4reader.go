@@ -34,6 +34,16 @@ func NewNats4Reader(options ...Option) (*Nats4Reader, error) {
 	return n4r, nil
 }
 
+func (n4r *Nats4Reader) InitStanConn(clientName string) error {
+	// get a nats connection
+	var err error
+	n4r.sc, err = NewConnection(n4r.host, n4r.cluster, clientName, n4r.port)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (n4r *Nats4Reader) PubAsJSON(fileName, meta string) error {
 	fmt.Println("Publishing:", fileName)
 
