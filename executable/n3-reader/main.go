@@ -12,10 +12,10 @@ func main() {
 
 	prepare := func(w *fw.Watcher) {}
 	cleanup := func(w *fw.Watcher) {
-		if err := os.RemoveAll(w.Folder); err != nil {
+		if err := os.RemoveAll(w.Folder()); err != nil {
 			panic(err)
 		}
-		fmt.Printf("%s is removed\n", w.Folder)
+		fmt.Printf("%s is removed\n", w.Folder())
 	}
 
 	{
@@ -40,7 +40,7 @@ func main() {
 			fw.OptWatcher("", "json", "100ms", false, false, ""),
 		}
 		if freader, err := fw.NewFileWatcher(opts...); err == nil {
-			
+
 			opts := []Option{
 				OptNatsHostName(""),
 				OptNatsPort(0),
@@ -51,7 +51,7 @@ func main() {
 			n3r, err := NewNats4Reader(opts...)
 			if err == nil {
 
-				n3r.InitStanConn(freader.Name)
+				n3r.InitStanConn(freader.Name())
 				freader.Event = NewN3ReaderEvent(n3r)
 				freader.StartWait(prepare, cleanup)
 

@@ -11,11 +11,11 @@ import (
 )
 
 type Watcher struct {
-	Id         string // meta
-	Name       string // meta
-	Format     string // meta
-	Folder     string
-	FileExt    string
+	id         string // meta
+	name       string // meta
+	format     string // meta
+	folder     string
+	fileExt    string
 	recursive  bool
 	inclHidden bool
 	ignore     string
@@ -24,6 +24,12 @@ type Watcher struct {
 	Event      IWatchEvent
 }
 
+func (w *Watcher) Id() string      { return w.id }
+func (w *Watcher) Name() string    { return w.name }
+func (w *Watcher) Format() string  { return w.format }
+func (w *Watcher) Folder() string  { return w.folder }
+func (w *Watcher) FileExt() string { return w.fileExt }
+
 func (w *Watcher) meta(filename string) string {
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
@@ -31,7 +37,7 @@ func (w *Watcher) meta(filename string) string {
 		"SourceFileFormat": "%s",				
 		"SourceFileName":"%s",		
 		"ReadTimestampUTC":"%s"
-	}`, w.Id, w.Name, w.Format, filename, time.Now().UTC().Format(time.RFC3339))
+	}`, w.id, w.name, w.format, filename, time.Now().UTC().Format(time.RFC3339))
 }
 
 func NewFileWatcher(options ...Option) (*Watcher, error) {

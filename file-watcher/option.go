@@ -34,10 +34,10 @@ func (w *Watcher) setOption(options ...Option) error {
 func OptID(id string) Option {
 	return func(w *Watcher) error {
 		if id != "" {
-			w.Id = id
+			w.id = id
 			return nil
 		}
-		w.Id = selfId
+		w.id = selfId
 		return nil
 	}
 }
@@ -45,14 +45,14 @@ func OptID(id string) Option {
 func OptName(name string) Option {
 	return func(w *Watcher) error {
 		if name != "" {
-			w.Name = name
+			w.name = name
 			return nil
 		}
 		name, err := os.Hostname()
 		if err != nil {
 			return err
 		}
-		w.Name = fmt.Sprintf("%s-reader-%s", name, selfId[:4])
+		w.name = fmt.Sprintf("%s-reader-%s", name, selfId[:4])
 		return nil
 	}
 }
@@ -67,7 +67,7 @@ func OptFormat(format string) Option {
 		format = strings.Trim(format, ".") // remove any excess . chars
 		switch format {
 		case "csv", "json":
-			w.Format = format
+			w.format = format
 			return nil
 		default:
 			return fmt.Errorf("input format [%s] not supported (must be one of csv|json)", format)
@@ -96,7 +96,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 
 		// must create folder if it does not exist. otherwise, panic
 		goio.MustCreateDir(folder)
-		w.Folder = folder
+		w.folder = folder
 
 		// Get any of the paths to ignore.
 		ignoredPaths := strings.Split(ignore, ",")
@@ -119,7 +119,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 			r := regexp.MustCompile("([^\\s]+(\\.(?i)(" + trimSuffix + "))$)")
 			w.watcher.AddFilterHook(watcher.RegexFilterHook(r, false))
 		}
-		w.FileExt = fileSuffix
+		w.fileExt = fileSuffix
 
 		// Add the watch folder specified.
 		if recursive {

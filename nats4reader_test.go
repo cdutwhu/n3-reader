@@ -13,7 +13,7 @@ func TestNewN3Reader(t *testing.T) {
 
 	}
 	cleanup := func(w *fw.Watcher) {
-		if err := os.RemoveAll(w.Folder); err != nil {
+		if err := os.RemoveAll(w.Folder()); err != nil {
 			panic(err)
 		}
 		fmt.Printf("%s is removed\n", w.Folder)
@@ -35,8 +35,8 @@ func TestNewN3Reader(t *testing.T) {
 		}
 		n3r, err := NewNats4Reader(opts...)
 		if err == nil {
-			
-			n3r.InitStanConn(freader.Name)
+
+			n3r.InitStanConn(freader.Name())
 			freader.Event = NewN3ReaderEvent(n3r)
 			freader.StartWait(prepare, cleanup)
 

@@ -19,10 +19,10 @@ func TestNewFileReader(t *testing.T) {
 	}
 	prepare := func(watcher *Watcher) {}
 	cleanup := func(watcher *Watcher) {
-		if err := os.RemoveAll(watcher.Folder); err != nil {
+		if err := os.RemoveAll(watcher.folder); err != nil {
 			panic(err)
 		}
-		fmt.Printf("%s is removed\n", watcher.Folder)
+		fmt.Printf("%s is removed\n", watcher.folder)
 	}
 	fw.StartWait(prepare, cleanup)
 }
