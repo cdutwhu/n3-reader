@@ -5,10 +5,12 @@ import (
 )
 
 const (
-	dfltHost       = "localhost"    // nats default
-	dfltPort       = 4222           // nats default
-	dfltCluster    = "test-cluster" // nats default
-	dfltConcurrent = 10             // safe default
+	dfltHost           = "127.0.0.1"           // nats default
+	dfltPort           = 4222                  // nats default
+	dfltStream         = "TEST-STREAM"         // nats default
+	dfltStreamSubjects = "TEST-STREAM.*"       // nats default
+	dfltSubject        = "TEST-STREAM.created" // nats default
+	dfltConcurrent     = 10                    // safe default
 )
 
 type Option func(*Nats4Reader) error
@@ -22,81 +24,49 @@ func (n3r *Nats4Reader) setOption(options ...Option) error {
 	return nil
 }
 
-//
-// set the nats server name or ip address
-// empty string will result in localhost as defalt hostname
-//
 func OptNatsHostName(hostName string) Option {
 	return func(n4r *Nats4Reader) error {
-		if hostName != "" {
-			n4r.host = hostName
-		}
-		n4r.host = dfltHost // nats default
+		SetIfNotEmpty(&n4r.host, hostName, dfltHost)
 		return nil
 	}
 }
 
-//
-// set the nats server communication port
-// port value of 0 or less will result in default nats port 4222
-//
 func OptNatsPort(port int) Option {
 	return func(n4r *Nats4Reader) error {
-		if port > 0 {
-			n4r.port = port
-			return nil
-		}
-		n4r.port = dfltPort
+		SetIfNotZero(&n4r.port, port, dfltPort)
 		return nil
 	}
 }
 
-//
-// set the nats streaming server cluster name.
-// empty string will result in nats default of 'test-cluster'
-//
-func OptNatsClusterName(clusterName string) Option {
+func OptNatsStream(stream string) Option {
 	return func(n4r *Nats4Reader) error {
-		if clusterName != "" {
-			n4r.cluster = clusterName
-		}
-		n4r.cluster = dfltCluster
+		SetIfNotEmpty(&n4r.stream, stream, dfltStream)
 		return nil
 	}
 }
 
-//
-// set the name of the nats topic to publish data once parsed
-// from the input files
-//
-func OptTopic(tName string) Option {
+func OptNatsStreamSubjects(streamSubjects string) Option {
 	return func(n4r *Nats4Reader) error {
-		if tName == "" {
-			return errors.New("must have Topic (nats topic to which reader will publish parsed data).")
-		}
-
-		// topic regex check
-		ok, err := ValidateNatsTopic(tName)
-		if ok {
-			n4r.topic = tName
-			return nil
-		}
-		return errors.Wrap(err, "Topic option error")
+		SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, dfltStreamSubjects)
+		return nil
 	}
 }
 
-//
-// set the number of input files that can be handled concurrently
-// set if number of filehandles on OS is a problem
-// defaults to 10
-//
+func OptSubject(subject string) Option {
+	return func(n4r *Nats4Reader) error {
+		validate := func(s string) (bool, error) {
+			if s == "" {
+				return false, errors.New("must have Subject (nats subject to which reader will publish parsed data)")
+			}
+			return ValidateNatsSubject(subject)
+		}
+		return SetIfValidStr(&n4r.subject, subject, validate)
+	}
+}
+
 func OptConcurrentFiles(n int) Option {
 	return func(n4r *Nats4Reader) error {
-		if n == 0 {
-			n4r.nConcurrent = dfltConcurrent // safe default
-			return nil
-		}
-		n4r.nConcurrent = n
+		SetIfNotZero(&n4r.nConcurrent, n, dfltConcurrent)
 		return nil
 	}
 }

@@ -33,34 +33,27 @@ func main() {
 	}
 
 	{
-		opts := []fw.Option{
+		optsFW := []fw.Option{
 			fw.OptID(""),
 			fw.OptFormat("json"),
 			fw.OptName(""),
 			fw.OptWatcher("", "json", "100ms", false, false, ""),
 		}
-		if freader, err := fw.NewFileWatcher(opts...); err == nil {
+		freader, err := fw.NewFileWatcher(optsFW...)
+		Check(err)
 
-			opts := []Option{
-				OptNatsHostName(""),
-				OptNatsPort(0),
-				OptNatsClusterName(""),
-				OptTopic("fromN3Reader"),
-				OptConcurrentFiles(0),
-			}
-			n3r, err := NewNats4Reader(opts...)
-			if err == nil {
-
-				n3r.InitStanConn(freader.Name())
-				freader.Event = NewN3ReaderEvent(n3r)
-				freader.StartWait(prepare, cleanup)
-
-			} else {
-				panic(err)
-			}
-
-		} else {
-			panic(err)
+		opts := []Option{
+			OptNatsHostName(""),
+			OptNatsPort(0),
+			OptNatsStream(""),
+			OptNatsStreamSubjects(""),
+			OptSubject("TEST-STREAM.created"),
+			OptConcurrentFiles(0),
 		}
+		n3r, err := NewNats4Reader(opts...)
+		Check(err)
+
+		freader.Event = NewN3ReaderEvent(n3r)
+		freader.StartWait(prepare, cleanup)
 	}
 }

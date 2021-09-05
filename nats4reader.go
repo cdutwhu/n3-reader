@@ -3,27 +3,33 @@ package n3reader
 import (
 	"fmt"
 	"os"
-
-	stan "github.com/nats-io/stan.go"
 )
 
 type Nats4Reader struct {
-	host        string
-	port        int
-	cluster     string
-	topic       string
-	sc          stan.Conn
-	nConcurrent int
+	host           string
+	port           int
+	stream         string
+	streamSubjects string
+	subject        string
+	nConcurrent    int
 }
 
 func (n4r *Nats4Reader) meta() string {
 	return fmt.Sprintf(`{
 		"NatsHost": "%s",
 		"NatsPort": "%5d",
-		"NatsCluster": "%s",
-		"PublishTopic":"%s",
-		"ConcurrentFiles":"%5d"
-	}`, n4r.host, n4r.port, n4r.cluster, n4r.topic, n4r.nConcurrent)
+		"StreamName": "%s",
+		"StreamSubjects": "%s",
+		"Subject": "%s",
+		"ConcurrentFiles": "%5d"
+	}`,
+		n4r.host,
+		n4r.port,
+		n4r.stream,
+		n4r.streamSubjects,
+		n4r.subject,
+		n4r.nConcurrent,
+	)
 }
 
 func NewNats4Reader(options ...Option) (*Nats4Reader, error) {
@@ -34,23 +40,16 @@ func NewNats4Reader(options ...Option) (*Nats4Reader, error) {
 	return n4r, nil
 }
 
-func (n4r *Nats4Reader) InitStanConn(clientName string) error {
-	// get a nats connection
-	var err error
-	n4r.sc, err = NewConnection(n4r.host, n4r.cluster, clientName, n4r.port)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (n4r *Nats4Reader) PubAsJSON(fileName, meta string) error {
 	fmt.Println("Publishing:", fileName)
 
-	_, err := os.Open(fileName)
+	f, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
+
+	// jt.ScanObject()
 
 	return nil
 }
