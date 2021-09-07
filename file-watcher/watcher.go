@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -34,10 +35,10 @@ func (w *Watcher) meta(filename string) string {
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
 		"ReaderName": "%s",
-		"SourceFileFormat": "%s",				
-		"SourceFileName":"%s",		
+		"SourceFormat": "%s",				
+		"SourceName":"%s",		
 		"ReadTimestampUTC":"%s"
-	}`, w.id, w.name, w.format, filename, time.Now().UTC().Format(time.RFC3339))
+	}`, w.id, w.name, w.format, filepath.Base(filename), time.Now().UTC().Format(time.RFC3339))
 }
 
 func NewFileWatcher(options ...Option) (*Watcher, error) {

@@ -21,7 +21,7 @@ func (event *n3ReaderEvent) OnCreate(path, meta string, t time.Time) {
 }
 
 func (event *n3ReaderEvent) OnWrite(path, meta string, t time.Time) {
-	event.PubAsJSON(path, meta)
+	// event.PubAsJSON(path, meta)
 }
 
 func (event *n3ReaderEvent) OnDelete(path, meta string, t time.Time) {
@@ -36,5 +36,5 @@ func (event *n3ReaderEvent) OnError(err error, t time.Time) {
 }
 
 func (event *n3ReaderEvent) OnClose(t time.Time) {
-
+	event.nc.Close()
 }

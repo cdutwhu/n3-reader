@@ -1,54 +1,53 @@
 package n3reader
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 )
 
 const (
-	dfltHost           = "127.0.0.1"           // nats default
-	dfltPort           = 4222                  // nats default
-	dfltStream         = "TEST-STREAM"         // nats default
-	dfltStreamSubjects = "TEST-STREAM.*"       // nats default
-	dfltSubject        = "TEST-STREAM.created" // nats default
-	dfltConcurrent     = 10                    // safe default
+	dfltHost           = "127.0.0.1"
+	dfltPort           = 4222
+	dfltStream         = "STREAM-1"
+	dfltStreamSubjects = "STREAM-1.*"
+	dfltSubject        = "STREAM-1.sub1"
 )
 
 type Option func(*Nats4Reader) error
 
 func (n3r *Nats4Reader) setOption(options ...Option) error {
-	for _, opt := range options {
+	for i, opt := range options {
 		if err := opt(n3r); err != nil {
-			return err
+			return errors.Wrap(err, fmt.Sprintf("@%d", i))
 		}
 	}
 	return nil
 }
 
+// Options
+
 func OptNatsHostName(hostName string) Option {
 	return func(n4r *Nats4Reader) error {
-		SetIfNotEmpty(&n4r.host, hostName, dfltHost)
-		return nil
+		return SetIfNotEmpty(&n4r.host, hostName, dfltHost)
 	}
 }
 
 func OptNatsPort(port int) Option {
 	return func(n4r *Nats4Reader) error {
-		SetIfNotZero(&n4r.port, port, dfltPort)
-		return nil
+		return SetIfNotZero(&n4r.port, port, dfltPort)
 	}
 }
 
 func OptNatsStream(stream string) Option {
 	return func(n4r *Nats4Reader) error {
-		SetIfNotEmpty(&n4r.stream, stream, dfltStream)
-		return nil
+		return SetIfNotEmpty(&n4r.stream, stream, dfltStream)
 	}
 }
 
 func OptNatsStreamSubjects(streamSubjects string) Option {
 	return func(n4r *Nats4Reader) error {
-		SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, dfltStreamSubjects)
-		return nil
+		return SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, dfltStreamSubjects)
 	}
 }
 
@@ -61,12 +60,5 @@ func OptSubject(subject string) Option {
 			return ValidateNatsSubject(subject)
 		}
 		return SetIfValidStr(&n4r.subject, subject, validate)
-	}
-}
-
-func OptConcurrentFiles(n int) Option {
-	return func(n4r *Nats4Reader) error {
-		SetIfNotZero(&n4r.nConcurrent, n, dfltConcurrent)
-		return nil
 	}
 }

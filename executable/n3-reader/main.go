@@ -45,10 +45,9 @@ func main() {
 		opts := []Option{
 			OptNatsHostName(""),
 			OptNatsPort(0),
-			OptNatsStream(""),
-			OptNatsStreamSubjects(""),
-			OptSubject("TEST-STREAM.created"),
-			OptConcurrentFiles(0),
+			OptNatsStream("STREAM-1"),
+			OptNatsStreamSubjects("STREAM-1.*"),
+			OptSubject("STREAM-1.test"),
 		}
 		n3r, err := NewNats4Reader(opts...)
 		Check(err)

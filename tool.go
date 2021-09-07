@@ -23,34 +23,36 @@ func SetIfValidStr(s *string, val string, f func(subject string) (bool, error)) 
 	return err
 }
 
-func SetIfNotEmpty(s *string, val, dVal string) {
+func SetIfNotEmpty(s *string, val, dVal string) error {
 	switch strings.Trim(val, " \t") {
 	case "":
 		*s = dVal
 	default:
 		*s = val
 	}
+	return nil
 }
 
-func SetIfNotZero(n *int, val, dVal int) {
+func SetIfNotZero(n *int, val, dVal int) error {
 	switch val {
 	case 0:
 		*n = dVal
 	default:
 		*n = val
 	}
+	return nil
 }
 
 //
 // checks provided nats topic only has alphanumeric & dot separators within the name
 //
-var topicRegex = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9\-.]*[A-Za-z0-9])?$`)
+var subjectRegex = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9\-.]*[A-Za-z0-9])?$`)
 
 //
 // do regex check on topic names provided for nats
 //
 func ValidateNatsSubject(subject string) (bool, error) {
-	valid := topicRegex.Match([]byte(subject))
+	valid := subjectRegex.Match([]byte(subject))
 	if valid {
 		return valid, nil
 	}
