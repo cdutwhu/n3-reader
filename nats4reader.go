@@ -1,20 +1,26 @@
 package n3reader
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"unicode"
 
+	jt "github.com/digisan/json-tool"
 	"github.com/nats-io/nats.go"
 )
 
 type Nats4Reader struct {
-	host           string                // option, meta
-	port           int                   // option, meta
-	stream         string                // option, meta
-	streamSubjects string                // option, no meta
-	subject        string                // option meta
+	host           string                // option,    meta
+	port           int                   // option,    meta
+	stream         string                // option,    meta
+	streamSubjects string                // option,    no meta
+	subject        string                // option,    meta
 	nc             *nats.Conn            // no option, no meta
 	js             nats.JetStreamContext // no option, no meta
+
+	// for outter user filling, only first UpperCase key can be meta
+	kvInfo map[string]interface{} // option as kv, Upper-Key meta
 }
 
 func (n4r *Nats4Reader) meta() string {
@@ -31,6 +37,23 @@ func (n4r *Nats4Reader) meta() string {
 		n4r.stream,
 		n4r.subject,
 	)
+}
+
+func (n4r *Nats4Reader) metaWithKV() string {
+
+	// only select upper case key kv for meta string
+	m := make(map[string]interface{})
+	for k, v := range n4r.kvInfo {
+		if unicode.IsUpper(rune(k[0])) {
+			m[k] = v
+		}
+	}
+
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return jt.MergeSgl(n4r.meta(), string(bytes))
 }
 
 func (n4r *Nats4Reader) initNatsJS() (err error) {
@@ -66,7 +89,7 @@ func (n4r *Nats4Reader) initNatsJS() (err error) {
 }
 
 func NewNats4Reader(options ...Option) (*Nats4Reader, error) {
-	n4r := &Nats4Reader{}
+	n4r := &Nats4Reader{kvInfo: make(map[string]interface{})}
 	if err := n4r.setOption(options...); err != nil {
 		return nil, err
 	}

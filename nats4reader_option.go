@@ -62,3 +62,13 @@ func OptSubject(subject string) Option {
 		return SetIfValidStr(&n4r.subject, subject, validate)
 	}
 }
+
+//////////////////////////////////////////////////
+
+// for outter user like otf-reader
+func OptKeyValue(key string, value interface{}) Option {
+	return func(n4r *Nats4Reader) error {
+		n4r.kvInfo[key] = value
+		return nil
+	}
+}

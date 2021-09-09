@@ -32,7 +32,7 @@ func (n4r *Nats4Reader) PubAsJSON(fileName, meta string) error {
 		}
 
 		// merge file watcher meta & nats reader meta
-		meta = jt.MergeSgl(meta, n4r.meta())
+		meta = jt.MergeSgl(meta, n4r.metaWithKV())
 
 		// make publish data
 		data := jt.Minimize(fmt.Sprintf(`{"meta":%s, "data":%s}`, meta, result.Obj), true)

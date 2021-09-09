@@ -18,19 +18,19 @@ func main() {
 		fmt.Printf("%s is removed\n", w.Folder())
 	}
 
-	{
-		// opts := []fw.Option{
-		// 	fw.OptID(""),
-		// 	fw.OptFormat("json"),
-		// 	fw.OptName(""),
-		// 	fw.OptWatcher("", "json", "100ms", false, false, ""),
-		// }
-		// freader, err := fw.NewFileWatcher(opts...)
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// freader.StartWait(prepare, cleanup)
-	}
+	// {
+	// 	opts := []fw.Option{
+	// 		fw.OptID(""),
+	// 		fw.OptFormat("json"),
+	// 		fw.OptName(""),
+	// 		fw.OptWatcher("", "json", "100ms", false, false, ""),
+	// 	}
+	// 	freader, err := fw.NewFileWatcher(opts...)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	freader.StartWait(prepare, cleanup)
+	// }
 
 	{
 		optsFW := []fw.Option{
@@ -48,6 +48,8 @@ func main() {
 			OptNatsStream("STREAM-1"),
 			OptNatsStreamSubjects("STREAM-1.*"),
 			OptSubject("STREAM-1.test"),
+			OptKeyValue("Provider", "test-provider"),
+			OptKeyValue("provider-1", "test-provider-1"), // test, should not be meta out
 		}
 		n3r, err := NewNats4Reader(opts...)
 		Check(err)
