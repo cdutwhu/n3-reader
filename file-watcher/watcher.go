@@ -36,7 +36,7 @@ func (w *Watcher) meta(filename string) string {
 		"ReaderID": "%s",
 		"ReaderName": "%s",
 		"SourceFormat": "%s",				
-		"SourceName":"%s",		
+		"Source":"%s",		
 		"ReadTimestampUTC":"%s"
 	}`, w.id, w.name, w.format, filepath.Base(filename), time.Now().UTC().Format(time.RFC3339))
 }

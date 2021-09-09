@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	jt "github.com/digisan/json-tool"
 	"github.com/nats-io/nats.go"
 )
 
@@ -38,14 +39,17 @@ func main() {
 		msgs, _ := sub.Fetch(100, nats.Context(ctx))
 		for _, msg := range msgs {
 			msg.Ack()
-			data := string(msg.Data)
-			fmt.Println(data)
-			receipt(js, data)
+			receive(msg.Data)
+			receipt(js, msg.Data)
 		}
 	}
 }
 
-func receipt(js nats.JetStreamContext, data string) {
+func receive(data []byte) {
+	fmt.Println(string(jt.Fmt(data, "  ")))
+}
+
+func receipt(js nats.JetStreamContext, info interface{}) {
 	_, err := js.Publish(pubSubject, []byte("OK"))
 	if err != nil {
 		log.Fatal(err)
