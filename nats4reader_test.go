@@ -29,10 +29,10 @@ func TestNewN3Reader(t *testing.T) {
 	Check(err)
 
 	opts := []Option{
-		OptNatsHostName(""),
+		OptNatsHost(""),
 		OptNatsPort(0),
-		OptNatsStream("ABC"),
-		OptNatsStreamSubjects("ABC.*"),
+		OptStream("ABC"),
+		OptStreamSubjects("ABC.*"),
 		OptSubject("ABC.created"),
 	}
 	n3r, err := NewNats4Reader(opts...)

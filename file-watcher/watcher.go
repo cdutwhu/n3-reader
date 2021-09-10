@@ -12,9 +12,9 @@ import (
 )
 
 type Watcher struct {
-	id         string // meta
-	name       string // meta
-	format     string // meta
+	id         string   // meta
+	name       string   // meta
+	format     []string // meta
 	folder     string
 	fileExt    string
 	recursive  bool
@@ -25,11 +25,11 @@ type Watcher struct {
 	Event      IWatchEvent
 }
 
-func (w *Watcher) Id() string      { return w.id }
-func (w *Watcher) Name() string    { return w.name }
-func (w *Watcher) Format() string  { return w.format }
-func (w *Watcher) Folder() string  { return w.folder }
-func (w *Watcher) FileExt() string { return w.fileExt }
+func (w *Watcher) Id() string       { return w.id }
+func (w *Watcher) Name() string     { return w.name }
+func (w *Watcher) Format() []string { return w.format }
+func (w *Watcher) Folder() string   { return w.folder }
+func (w *Watcher) FileExt() string  { return w.fileExt }
 
 func (w *Watcher) meta(filename string) string {
 	return fmt.Sprintf(`{
@@ -75,15 +75,17 @@ func (w *Watcher) start() error {
 						path = event.Path
 						meta = w.meta(event.Path)
 					)
-					switch event.Op {
-					case watcher.Remove:
-						w.Event.OnDelete(path, meta, time.Now())
+					if HasAnySuffix(path, w.format...) { // only interested in specific format
+						switch event.Op {
+						case watcher.Remove:
+							w.Event.OnDelete(path, meta, time.Now())
 
-					case watcher.Create:
-						w.Event.OnCreate(path, meta, event.ModTime())
+						case watcher.Create:
+							w.Event.OnCreate(path, meta, event.ModTime())
 
-					case watcher.Write:
-						w.Event.OnWrite(path, meta, event.ModTime())
+						case watcher.Write:
+							w.Event.OnWrite(path, meta, event.ModTime())
+						}
 					}
 				}
 

@@ -1,14 +1,39 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	. "github.com/cdutwhu/n3-reader"
 	fw "github.com/cdutwhu/n3-reader/file-watcher"
+	cp "github.com/digisan/cli-prompt"
+	"github.com/pkg/errors"
 )
 
 func main() {
+
+	configPtr := flag.String("c", "./config.json", "config(json) file path")
+	flag.Parse()
+
+	mc, err := cp.PromptConfig(*configPtr)
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "Invalid config file as JSON format"))
+	}
+
+	// use outter mc
+	S := func(name string) string {
+		return mc[name].(string)
+	}
+	B := func(name string) bool {
+		return mc[name].(bool)
+	}
+	I := func(name string) int {
+		return int(mc[name].(float64))
+	}
+
+	// ------------------------------------------ //
 
 	prepare := func(w *fw.Watcher) {}
 	cleanup := func(w *fw.Watcher) {
@@ -34,20 +59,22 @@ func main() {
 
 	{
 		optsFW := []fw.Option{
-			fw.OptID(""),
-			fw.OptFormat("json"),
-			fw.OptName(""),
-			fw.OptWatcher("", "json", "100ms", false, false, ""),
+			fw.OptID(S("ID")),
+			fw.OptFormat(S("Format")),
+			fw.OptName(S("ReaderName")),
+			fw.OptWatcher(S("WatchFolder"), "", S("Interval"), B("Recursive"), B("InclHidden"), S("Ignore")),
 		}
 		freader, err := fw.NewFileWatcher(optsFW...)
 		Check(err)
 
 		opts := []Option{
-			OptNatsHostName(""),
-			OptNatsPort(0),
-			OptNatsStream("STREAM-1"),
-			OptNatsStreamSubjects("STREAM-1.*"),
-			OptSubject("STREAM-1.test"),
+			OptNatsHost(S("NatsHost")),
+			OptNatsPort(I("NatsPort")),
+			OptStream(S("Stream")),
+			OptStreamSubjects(S("Stream") + ".*"),
+			OptSubject(S("Stream") + "." + S("Subject")),
+
+			// extention use for otf-reader, etc...
 			OptKeyValue("Provider", "test-provider"),
 			OptKeyValue("provider-1", "test-provider-1"), // test, should not be meta out
 		}

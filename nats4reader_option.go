@@ -27,7 +27,7 @@ func (n3r *Nats4Reader) setOption(options ...Option) error {
 
 // Options
 
-func OptNatsHostName(hostName string) Option {
+func OptNatsHost(hostName string) Option {
 	return func(n4r *Nats4Reader) error {
 		return SetIfNotEmpty(&n4r.host, hostName, dfltHost)
 	}
@@ -39,13 +39,13 @@ func OptNatsPort(port int) Option {
 	}
 }
 
-func OptNatsStream(stream string) Option {
+func OptStream(stream string) Option {
 	return func(n4r *Nats4Reader) error {
 		return SetIfNotEmpty(&n4r.stream, stream, dfltStream)
 	}
 }
 
-func OptNatsStreamSubjects(streamSubjects string) Option {
+func OptStreamSubjects(streamSubjects string) Option {
 	return func(n4r *Nats4Reader) error {
 		return SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, dfltStreamSubjects)
 	}

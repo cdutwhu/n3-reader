@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func SelfMD5() string {
@@ -17,4 +18,13 @@ func SelfMD5() string {
 		panic(err)
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func HasAnySuffix(s string, suffixGrp ...string) bool {
+	for _, suffix := range suffixGrp {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+	return false
 }

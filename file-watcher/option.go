@@ -57,21 +57,31 @@ func OptName(name string) Option {
 	}
 }
 
+// "|" as separator, like "json|xml|csv"
 func OptFormat(format string) Option {
 	return func(w *Watcher) error {
 		if format == "" {
 			return errors.New("input format cannot be empty")
 		}
 
-		format = strings.ToLower(format)
-		format = strings.Trim(format, ".") // remove any excess . chars
-		switch format {
-		case "csv", "json":
-			w.format = format
-			return nil
+		var fmts []string
+		fmtsPile := strings.Split(format, "|")
+		fmtsComma := strings.Split(format, ",")
+		switch {
+		case len(fmtsPile) > 1: // "|" to separate if could be 2+ formats
+			fmts = fmtsPile
+		case len(fmtsComma) > 1: // "," to separate if could be 2+ formats
+			fmts = fmtsComma
 		default:
-			return fmt.Errorf("input format [%s] not supported (must be one of csv|json)", format)
+			fmts = append(fmts, format) // only one format
 		}
+		for i := 0; i < len(fmts); i++ {
+			fmts[i] = strings.ToLower(fmts[i])
+			fmts[i] = strings.Trim(fmts[i], ".") // remove any excess . chars
+		}
+
+		w.format = fmts
+		return nil
 	}
 }
 
@@ -105,15 +115,13 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 			if trimmed == "" {
 				continue
 			}
-			err := w.watcher.Ignore(trimmed)
-			if err != nil {
+			if err := w.watcher.Ignore(trimmed); err != nil {
 				return errors.Wrap(err, "unable to add ignore folder "+trimmed)
 			}
 		}
 		w.ignore = ignore
 
-		// Only files that match the regular expression for file suffix during file listings
-		// will be watched.
+		// Only files that match the regular expression for file suffix during file listings will be watched.
 		if fileSuffix != "" {
 			trimSuffix := strings.Trim(fileSuffix, ".")
 			r := regexp.MustCompile("([^\\s]+(\\.(?i)(" + trimSuffix + "))$)")

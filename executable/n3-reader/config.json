@@ -1,0 +1,16 @@
+{
+    "ID": "",
+    "Format": "json|xml|csv",
+    "ReaderName": "",
+    "WatchFolder": "",
+    "Interval": "200ms",
+    "Recursive": false, 
+    "InclHidden": false, 
+    "Ignore": "",
+    "NatsHost": "127.0.0.1",
+    "NatsPort": 0,
+    "Stream": "STREAM-1",
+    "_Stream": "Input Stream Name",
+    "Subject": "subject-1-qm",
+    "_Subject": "Input Subject Name Under Specified Stream"
+}

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	subSubject = "STREAM-1.test"
+	subSubject = "streamQM.subjectQM"
 	pubSubject = "STREAM-1.test-receipt"
 )
 
