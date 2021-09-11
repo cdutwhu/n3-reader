@@ -12,25 +12,32 @@ import (
 	"github.com/pkg/errors"
 )
 
+var mc map[string]interface{}
+var err error
+
+// use outter mc
+func S(name string) string {
+	return mc[name].(string)
+}
+func B(name string) bool {
+	return mc[name].(bool)
+}
+func I(name string) int {
+	return int(mc[name].(float64))
+}
+
 func main() {
 
 	configPtr := flag.String("c", "./config.json", "config(json) file path")
 	flag.Parse()
 
-	mc, err := cp.PromptConfig(*configPtr)
+	mc, err = cp.PromptConfig(*configPtr)
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "Invalid config file as JSON format"))
 	}
 
-	// use outter mc
-	S := func(name string) string {
-		return mc[name].(string)
-	}
-	B := func(name string) bool {
-		return mc[name].(bool)
-	}
-	I := func(name string) int {
-		return int(mc[name].(float64))
+	if mc != nil {
+		fmt.Println("Running...")
 	}
 
 	// ------------------------------------------ //

@@ -9,9 +9,9 @@ import (
 const (
 	dfltHost           = "127.0.0.1"
 	dfltPort           = 4222
-	dfltStream         = "STREAM-1"
-	dfltStreamSubjects = "STREAM-1.*"
-	dfltSubject        = "STREAM-1.sub1"
+	dfltStream         = "STREAM"
+	dfltStreamSubjects = "STREAM.*"
+	dfltSubject        = "STREAM.sub"
 )
 
 type Option func(*Nats4Reader) error

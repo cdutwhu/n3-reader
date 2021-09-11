@@ -1,0 +1,7 @@
+{
+    "NatsHost": "127.0.0.1",
+    "NatsPort": 4222,
+    "subStream": "STREAM1",
+    "subSubject": "subject1-qm",
+    "durable": "consumer-test"
+}

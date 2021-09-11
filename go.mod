@@ -4,9 +4,9 @@ go 1.17
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/digisan/cli-prompt v0.0.2
+	github.com/digisan/cli-prompt v0.0.3
 	github.com/digisan/gotk v0.0.33
-	github.com/digisan/json-tool v0.0.11
+	github.com/digisan/json-tool v0.0.12
 	github.com/nats-io/nats.go v1.12.1
 	github.com/pkg/errors v0.9.1
 	github.com/radovskyb/watcher v1.0.7

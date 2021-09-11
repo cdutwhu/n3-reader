@@ -9,8 +9,8 @@
     "Ignore": "",
     "NatsHost": "127.0.0.1",
     "NatsPort": 0,
-    "Stream": "STREAM-1",
+    "Stream": "STREAM1",
     "_Stream": "Input Stream Name",
-    "Subject": "subject-1-qm",
+    "Subject": "subject1-qm",
     "_Subject": "Input Subject Name Under Specified Stream"
 }
