@@ -17,13 +17,25 @@ var err error
 
 // use outter mc
 func S(name string) string {
-	return mc[name].(string)
+	if v, ok := mc[name]; ok {
+		return v.(string)
+	}
+	log.Fatalf("No argument [%s] in config file\n", name)
+	return ""
 }
 func B(name string) bool {
-	return mc[name].(bool)
+	if v, ok := mc[name]; ok {
+		return v.(bool)
+	}
+	log.Fatalf("No argument [%s] in config file\n", name)
+	return false
 }
 func I(name string) int {
-	return int(mc[name].(float64))
+	if v, ok := mc[name]; ok {
+		return int(v.(float64))
+	}
+	log.Fatalf("No argument [%s] in config file\n", name)
+	return 0
 }
 
 func main() {

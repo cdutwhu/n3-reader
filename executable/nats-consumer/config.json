@@ -1,7 +1,12 @@
 {
     "NatsHost": "127.0.0.1",
+    "_NatsHost": "Input NATS IP",
     "NatsPort": 4222,
-    "subStream": "STREAM1",
-    "subSubject": "subject1-qm",
-    "durable": "consumer-test"
+    "_NatsPort": "Input NATS Port",
+    "SubStream": "STREAM1",
+    "_SubStream": "Input NATS subscription stream name",
+    "SubSubject": "subject1-qm",
+    "_SubSubject": "Input NATS subscription subject under specified stream",
+    "Durable": "consumer-test",
+    "FetchFrequency": "10s"
 }
