@@ -22,8 +22,10 @@ func (n4r *Nats4Reader) PubAsJSON(fileName, meta string) error {
 	defer cancel()
 
 	cOut, jarr := jt.ScanObject(ctx, f, false, true, jt.OUT_ORI)
-	if !jarr {
-		log.Println("not json array")
+	if jarr {
+		log.Println("Array JSON Fetched")
+	} else {
+		log.Println("Object JSON Fetched")
 	}
 	for result := range cOut {
 		if result.Err != nil {

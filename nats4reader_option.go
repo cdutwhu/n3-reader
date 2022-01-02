@@ -6,12 +6,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+// If Invalid value set in config, below values apply
 const (
-	dfltHost           = "127.0.0.1"
-	dfltPort           = 4222
-	dfltStream         = "STREAM"
-	dfltStreamSubjects = "STREAM.*"
-	dfltSubject        = "STREAM.sub"
+	Host           = "127.0.0.1"
+	Port           = 4222
+	Stream         = "STREAM"
+	StreamSubjects = "STREAM.*"
+	Subject        = "STREAM.sub"
 )
 
 type Option func(*Nats4Reader) error
@@ -29,25 +30,25 @@ func (n3r *Nats4Reader) setOption(options ...Option) error {
 
 func OptNatsHost(hostName string) Option {
 	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.host, hostName, dfltHost)
+		return SetIfNotEmpty(&n4r.host, hostName, Host)
 	}
 }
 
 func OptNatsPort(port int) Option {
 	return func(n4r *Nats4Reader) error {
-		return SetIfNotZero(&n4r.port, port, dfltPort)
+		return SetIfNotZero(&n4r.port, port, Port)
 	}
 }
 
 func OptStream(stream string) Option {
 	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.stream, stream, dfltStream)
+		return SetIfNotEmpty(&n4r.stream, stream, Stream)
 	}
 }
 
 func OptStreamSubjects(streamSubjects string) Option {
 	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, dfltStreamSubjects)
+		return SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, StreamSubjects)
 	}
 }
 

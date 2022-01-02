@@ -9,7 +9,7 @@
     "Ignore": "",
     "NatsHost": "127.0.0.1",
     "_NatsHost": "Input Nats IP",
-    "NatsPort": 0,
+    "NatsPort": 4222,
     "_NatsPort": "Input Nats Port, 0 means default 4222 applies",
     "Stream": "STREAM1",
     "_Stream": "Input Stream Name",
