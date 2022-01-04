@@ -11,9 +11,10 @@ func TestNewFileReader(t *testing.T) {
 		OptID(""),
 		OptFormat("json"),
 		OptName("Reader"),
-		OptWatcher("", "json", "1s", false, false, ""),
+		OptWatcher("", "json", "1s", false, false, "", true),
 	}
-	fw, err := NewFileWatcher(opts...)
+	fw, err := NewFileWatcher(opts...) // already set global 'Event' to file watcher Event
+	// fw.Event = &Event{}
 	if err != nil {
 		panic(err)
 	}

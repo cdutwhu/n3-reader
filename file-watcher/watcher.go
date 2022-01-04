@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	lk "github.com/digisan/logkit"
 	"github.com/radovskyb/watcher"
 )
 
@@ -20,6 +21,7 @@ type Watcher struct {
 	recursive  bool
 	inclHidden bool
 	ignore     string
+	autodel    bool
 	watcher    *watcher.Watcher
 	interval   time.Duration
 	Event      IWatchEvent
@@ -30,19 +32,18 @@ func (w *Watcher) Name() string     { return w.name }
 func (w *Watcher) Format() []string { return w.format }
 func (w *Watcher) Folder() string   { return w.folder }
 func (w *Watcher) FileExt() string  { return w.fileExt }
-
-func (w *Watcher) meta(filename string) string {
+func (w *Watcher) meta(file string) string {
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
 		"ReaderName": "%s",
 		"SourceFormat": "%s",				
 		"Source":"%s",		
 		"ReadTimestampUTC":"%s"
-	}`, w.id, w.name, w.format, filepath.Base(filename), time.Now().UTC().Format(time.RFC3339))
+	}`, w.id, w.name, w.format, filepath.Base(file), time.Now().UTC().Format(time.RFC3339))
 }
 
 func NewFileWatcher(options ...Option) (*Watcher, error) {
-	w := &Watcher{Event: &dftEvent{}}
+	w := &Watcher{Event: &Event{}}
 	if err := w.setOption(options...); err != nil {
 		return nil, err
 	}
@@ -67,6 +68,7 @@ func (w *Watcher) Close(cleanup func(watcher *Watcher)) {
 func (w *Watcher) start() error {
 
 	go func() {
+		adPath := ""
 		for {
 			select {
 			case event := <-w.watcher.Event:
@@ -78,23 +80,36 @@ func (w *Watcher) start() error {
 					if HasAnySuffix(path, w.format...) { // only interested in specific format
 						switch event.Op {
 						case watcher.Remove:
-							w.Event.OnDelete(path, meta, time.Now())
+							if adPath != path {
+								e := w.Event.OnDelete(path, meta, time.Now())
+								lk.WarnOnErr("<OnDelete> Error@ %v", e)
+							}
 
 						case watcher.Create:
-							w.Event.OnCreate(path, meta, event.ModTime())
+							e := w.Event.OnCreate(path, meta, event.ModTime())
+							lk.WarnOnErr("<OnCreate> Error@ %v", e)
+							if w.autodel {
+								adPath = path
+								lk.FailOnErr("<OnCreate-AutoDelete> Error@ %v", os.Remove(path))
+							}
 
 						case watcher.Write:
-							w.Event.OnWrite(path, meta, event.ModTime())
+							e := w.Event.OnWrite(path, meta, event.ModTime())
+							lk.WarnOnErr("<OnWrite> Error@ %v", e)
 						}
+					} else {
+						lk.WarnOnErr("<%s> type file is ignored\n", filepath.Ext(path))
 					}
 				}
 
 			case err := <-w.watcher.Error:
-				w.Event.OnError(err, time.Now())
+				e := w.Event.OnError(err, time.Now())
+				lk.WarnOnErr("<OnError> Error@ %v", e)
 				return
 
 			case <-w.watcher.Closed:
-				w.Event.OnClose(time.Now())
+				e := w.Event.OnClose(time.Now())
+				lk.WarnOnErr("<OnClose> Error@ %v", e)
 				return
 			}
 		}
@@ -106,7 +121,8 @@ func (w *Watcher) start() error {
 
 func (w *Watcher) StartWait(prepare, cleanup func(watcher *Watcher)) {
 
-	fmt.Println("\nwatcher is running")
+	lk.Log("watcher is running...")
+
 	w.Init(prepare) // do some preparation
 
 	// signal handler for shutdown

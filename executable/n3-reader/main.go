@@ -67,7 +67,7 @@ func main() {
 	// 		fw.OptID(""),
 	// 		fw.OptFormat("json"),
 	// 		fw.OptName(""),
-	// 		fw.OptWatcher("", "json", "100ms", false, false, ""),
+	// 		fw.OptWatcher("", "json", "100ms", false, false, "", true),
 	// 	}
 	// 	freader, err := fw.NewFileWatcher(opts...)
 	// 	if err != nil {
@@ -81,9 +81,9 @@ func main() {
 			fw.OptID(S("ID")),
 			fw.OptFormat(S("Format")),
 			fw.OptName(S("ReaderName")),
-			fw.OptWatcher(S("WatchFolder"), "", S("Interval"), B("Recursive"), B("InclHidden"), S("Ignore")),
+			fw.OptWatcher(S("WatchFolder"), "", S("Interval"), B("Recursive"), B("InclHidden"), S("Ignore"), B("AutoDelete")),
 		}
-		freader, err := fw.NewFileWatcher(optsFW...)
+		fw, err := fw.NewFileWatcher(optsFW...)
 		Check(err)
 
 		opts := []Option{
@@ -97,10 +97,10 @@ func main() {
 			OptKeyValue("Provider", "test-provider"),
 			OptKeyValue("provider-1", "test-provider-1"), // test, should not be meta out
 		}
-		n3r, err := NewNats4Reader(opts...)
+		nr, err := NewNats4Reader(opts...)
 		Check(err)
 
-		freader.Event = NewN3ReaderEvent(n3r)
-		freader.StartWait(prepare, cleanup)
+		fw.Event = NewReaderEvent(nr)
+		fw.StartWait(prepare, cleanup)
 	}
 }

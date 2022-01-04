@@ -15,11 +15,11 @@ const (
 	Subject        = "STREAM.sub"
 )
 
-type Option func(*Nats4Reader) error
+type Option func(*NatsReader) error
 
-func (n3r *Nats4Reader) setOption(options ...Option) error {
+func (nr *NatsReader) setOption(options ...Option) error {
 	for i, opt := range options {
-		if err := opt(n3r); err != nil {
+		if err := opt(nr); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("@%d", i))
 		}
 	}
@@ -29,38 +29,38 @@ func (n3r *Nats4Reader) setOption(options ...Option) error {
 // Options
 
 func OptNatsHost(hostName string) Option {
-	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.host, hostName, Host)
+	return func(nr *NatsReader) error {
+		return SetIfNotEmpty(&nr.host, hostName, Host)
 	}
 }
 
 func OptNatsPort(port int) Option {
-	return func(n4r *Nats4Reader) error {
-		return SetIfNotZero(&n4r.port, port, Port)
+	return func(nr *NatsReader) error {
+		return SetIfNotZero(&nr.port, port, Port)
 	}
 }
 
 func OptStream(stream string) Option {
-	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.stream, stream, Stream)
+	return func(nr *NatsReader) error {
+		return SetIfNotEmpty(&nr.stream, stream, Stream)
 	}
 }
 
 func OptStreamSubjects(streamSubjects string) Option {
-	return func(n4r *Nats4Reader) error {
-		return SetIfNotEmpty(&n4r.streamSubjects, streamSubjects, StreamSubjects)
+	return func(nr *NatsReader) error {
+		return SetIfNotEmpty(&nr.streamSubjects, streamSubjects, StreamSubjects)
 	}
 }
 
 func OptSubject(subject string) Option {
-	return func(n4r *Nats4Reader) error {
+	return func(nr *NatsReader) error {
 		validate := func(s string) (bool, error) {
 			if s == "" {
 				return false, errors.New("must have Subject (nats subject to which reader will publish parsed data)")
 			}
 			return ValidateNatsSubject(subject)
 		}
-		return SetIfValidStr(&n4r.subject, subject, validate)
+		return SetIfValidStr(&nr.subject, subject, validate)
 	}
 }
 
@@ -68,8 +68,8 @@ func OptSubject(subject string) Option {
 
 // for outter user like otf-reader
 func OptKeyValue(key string, value interface{}) Option {
-	return func(n4r *Nats4Reader) error {
-		n4r.kvInfo[key] = value
+	return func(nr *NatsReader) error {
+		nr.kvInfo[key] = value
 		return nil
 	}
 }

@@ -8,5 +8,5 @@
     "SubSubject": "subject1-qm",
     "_SubSubject": "Input NATS subscription subject under specified stream",
     "Durable": "consumer-test",
-    "FetchFrequency": "10s"
+    "FetchFrequency": "1s"
 }

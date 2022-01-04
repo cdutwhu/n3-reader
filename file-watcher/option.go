@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	goio "github.com/digisan/gotk/io"
+	gio "github.com/digisan/gotk/io"
 	"github.com/pkg/errors"
 	"github.com/radovskyb/watcher"
 )
@@ -85,7 +85,7 @@ func OptFormat(format string) Option {
 	}
 }
 
-func OptWatcher(folder string, fileSuffix string, interval string, recursive bool, inclHidden bool, ignore string) Option {
+func OptWatcher(folder string, suffix string, interval string, recursive bool, inclHidden bool, ignore string, autodel bool) Option {
 	return func(w *Watcher) error {
 
 		w.watcher = watcher.New()
@@ -105,7 +105,7 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 		}
 
 		// must create folder if it does not exist. otherwise, panic
-		goio.MustCreateDir(folder)
+		gio.MustCreateDir(folder)
 		w.folder = folder
 
 		// Get any of the paths to ignore.
@@ -122,12 +122,12 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 		w.ignore = ignore
 
 		// Only files that match the regular expression for file suffix during file listings will be watched.
-		if fileSuffix != "" {
-			trimSuffix := strings.Trim(fileSuffix, ".")
+		if suffix != "" {
+			trimSuffix := strings.Trim(suffix, ".")
 			r := regexp.MustCompile("([^\\s]+(\\.(?i)(" + trimSuffix + "))$)")
 			w.watcher.AddFilterHook(watcher.RegexFilterHook(r, false))
 		}
-		w.fileExt = fileSuffix
+		w.fileExt = suffix
 
 		// Add the watch folder specified.
 		if recursive {
@@ -150,6 +150,9 @@ func OptWatcher(folder string, fileSuffix string, interval string, recursive boo
 			return errors.Wrap(err, "unable to parse watcher interval as duration")
 		}
 		w.interval = parsedInterval
+
+		// Set Auto-Delete after Creating
+		w.autodel = autodel
 
 		return nil
 	}

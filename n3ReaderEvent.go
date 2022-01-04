@@ -8,33 +8,36 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-type n3ReaderEvent struct {
-	*Nats4Reader
+type ReaderEvent struct {
+	*NatsReader
 }
 
-func NewN3ReaderEvent(n4r *Nats4Reader) *n3ReaderEvent {
-	return &n3ReaderEvent{n4r}
+func NewReaderEvent(nr *NatsReader) *ReaderEvent {
+	return &ReaderEvent{nr}
 }
 
-func (event *n3ReaderEvent) OnCreate(path, meta string, t time.Time) {
-	event.PubAsJSON(path, meta)
+func (evt *ReaderEvent) OnCreate(path, fwMeta string, t time.Time) error {
+	return evt.Publish(path, fwMeta)
 }
 
-func (event *n3ReaderEvent) OnWrite(path, meta string, t time.Time) {
-	// event.PubAsJSON(path, meta)
+func (evt *ReaderEvent) OnWrite(path, fwMeta string, t time.Time) error {
+	// evt.PubAsJSON(path, meta)
+	return nil
 }
 
-func (event *n3ReaderEvent) OnDelete(path, meta string, t time.Time) {
+func (evt *ReaderEvent) OnDelete(path, fwMeta string, t time.Time) error {
 	m := make(map[string]interface{})
-	json.Unmarshal([]byte(meta), &m)
+	json.Unmarshal([]byte(fwMeta), &m)
 	fmt.Printf("\nfile: %s\n[Deleted]: %s\n", path, t)
 	spew.Dump(m)
+	return nil
 }
 
-func (event *n3ReaderEvent) OnError(err error, t time.Time) {
-
+func (evt *ReaderEvent) OnError(err error, t time.Time) error {
+	return err
 }
 
-func (event *n3ReaderEvent) OnClose(t time.Time) {
-	event.nc.Close()
+func (evt *ReaderEvent) OnClose(t time.Time) error {
+	evt.nc.Close()
+	return nil
 }

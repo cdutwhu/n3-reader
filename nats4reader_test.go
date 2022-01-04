@@ -23,9 +23,9 @@ func TestNewN3Reader(t *testing.T) {
 		fw.OptID(""),
 		fw.OptFormat("json"),
 		fw.OptName(""),
-		fw.OptWatcher("", "json", "100ms", false, false, ""),
+		fw.OptWatcher("", "json", "100ms", false, false, "", true),
 	}
-	freader, err := fw.NewFileWatcher(optsFR...)
+	fw, err := fw.NewFileWatcher(optsFR...)
 	Check(err)
 
 	opts := []Option{
@@ -35,9 +35,9 @@ func TestNewN3Reader(t *testing.T) {
 		OptStreamSubjects("ABC.*"),
 		OptSubject("ABC.created"),
 	}
-	n3r, err := NewNats4Reader(opts...)
+	nr, err := NewNats4Reader(opts...)
 	Check(err)
 
-	freader.Event = NewN3ReaderEvent(n3r)
-	freader.StartWait(prepare, cleanup)
+	fw.Event = NewReaderEvent(nr)
+	fw.StartWait(prepare, cleanup)
 }

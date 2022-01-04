@@ -9,40 +9,47 @@ import (
 )
 
 type IWatchEvent interface {
-	OnCreate(path, meta string, t time.Time)
-	OnWrite(path, meta string, t time.Time)
-	OnDelete(path, meta string, t time.Time)
-	OnError(err error, t time.Time)
-	OnClose(t time.Time)
+	OnCreate(path, fwMeta string, t time.Time) error
+	OnWrite(path, fwMeta string, t time.Time) error
+	OnDelete(path, fwMeta string, t time.Time) error
+	OnError(err error, t time.Time) error
+	OnClose(t time.Time) error
 }
 
-type dftEvent struct{}
+// default event example
 
-func (e *dftEvent) OnCreate(path, meta string, t time.Time) {
+type Event struct{}
+
+func (evt *Event) OnCreate(path, fwMeta string, t time.Time) error {
 	m := make(map[string]interface{})
-	json.Unmarshal([]byte(meta), &m)
+	json.Unmarshal([]byte(fwMeta), &m)
 	fmt.Printf("\nfile: %s\n[Created]: %s\n", path, t)
 	spew.Dump(m)
+	return nil
 }
 
-func (e *dftEvent) OnWrite(path, meta string, t time.Time) {
+func (evt *Event) OnWrite(path, fwMeta string, t time.Time) error {
 	m := make(map[string]interface{})
-	json.Unmarshal([]byte(meta), &m)
+	json.Unmarshal([]byte(fwMeta), &m)
 	fmt.Printf("\nfile: %s\n[Modified]: %s\n", path, t)
 	spew.Dump(m)
+	return nil
 }
 
-func (e *dftEvent) OnDelete(path, meta string, t time.Time) {
+func (evt *Event) OnDelete(path, fwMeta string, t time.Time) error {
 	m := make(map[string]interface{})
-	json.Unmarshal([]byte(meta), &m)
+	json.Unmarshal([]byte(fwMeta), &m)
 	fmt.Printf("\nfile: %s\n[Deleted]: %s\n", path, t)
 	spew.Dump(m)
+	return nil
 }
 
-func (e *dftEvent) OnError(err error, t time.Time) {
+func (evt *Event) OnError(err error, t time.Time) error {
 	fmt.Println("\tFile-Watcher error occurred: ", err, t)
+	return nil
 }
 
-func (e *dftEvent) OnClose(t time.Time) {
+func (evt *Event) OnClose(t time.Time) error {
 	fmt.Println("\tFile-Watcher closed at ", t)
+	return nil
 }
