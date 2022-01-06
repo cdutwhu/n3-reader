@@ -36,7 +36,7 @@ func (w *Watcher) meta(file string) string {
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
 		"ReaderName": "%s",
-		"SourceFormat": "%s",				
+		"Format": "%s",				
 		"Source":"%s",		
 		"ReadTimestampUTC":"%s"
 	}`, w.id, w.name, w.format, filepath.Base(file), time.Now().UTC().Format(time.RFC3339))

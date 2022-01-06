@@ -2,13 +2,16 @@ package n3reader
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	jt "github.com/digisan/json-tool"
+	lk "github.com/digisan/logkit"
 	"github.com/nats-io/nats.go"
 )
 
@@ -17,10 +20,38 @@ var (
 		".json": pubJson,
 		".run":  pubBytes,
 	}
+
+	pubMethod = func(filetype string) func(nats.JetStreamContext, string, *os.File, string) error {
+		filetype = "." + strings.TrimPrefix(filetype, ".")
+		if fn, ok := mFn[filetype]; ok {
+			return fn
+		}
+		lk.Warn("<%s> file type has no specific publish method, <pubBytes> applies", filetype)
+		return pubBytes
+	}
 )
 
-func publish(js nats.JetStreamContext, subj string, data []byte) error {
-	ack, err := js.Publish(subj, data)
+func meta2header(meta string) nats.Header {
+	m := make(map[string]interface{})
+	lk.FailOnErr("%v", json.Unmarshal([]byte(meta), &m))
+	h := nats.Header{}
+	for k, v := range m {
+		h.Add(k, fmt.Sprint(v))
+	}
+	return h
+}
+
+func publish(js nats.JetStreamContext, subj string, header nats.Header, data []byte) error {
+
+	msg := &nats.Msg{
+		Subject: subj,
+		Header:  header,
+		Data:    data,
+	}
+
+	ack, err := js.PublishMsg(msg)
+	//ack, err := js.Publish(subj, data)
+
 	if err != nil {
 		return err
 	}
@@ -29,17 +60,21 @@ func publish(js nats.JetStreamContext, subj string, data []byte) error {
 }
 
 func pubBytes(js nats.JetStreamContext, subj string, f *os.File, meta string) error {
+
+	header := meta2header(meta)
 	data, err := io.ReadAll(f)
 	if err != nil {
 		return err
 	}
 	// publish action
-	return publish(js, subj, data)
+	return publish(js, subj, header, data)
 }
 
 func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) error {
 
-	msg := map[bool]string{
+	header := meta2header(meta)
+
+	hint := map[bool]string{
 		true:  "Array JSON Fetched",
 		false: "Object JSON Fetched",
 	}
@@ -48,7 +83,7 @@ func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) err
 	defer cancel()
 
 	cOut, arr := jt.ScanObject(ctx, f, false, true, jt.OUT_ORI)
-	log.Println(msg[arr])
+	log.Println(hint[arr])
 
 	for result := range cOut {
 		if result.Err != nil {
@@ -60,7 +95,7 @@ func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) err
 		data := jt.Minimize(fmt.Sprintf(`{"meta":%s, "data":%s}`, meta, result.Obj), true)
 
 		// publish action
-		if err := publish(js, subj, []byte(data)); err != nil {
+		if err := publish(js, subj, header, []byte(data)); err != nil {
 			return err
 		}
 	}
@@ -70,7 +105,7 @@ func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) err
 
 func (nr *NatsReader) Publish(file, fwMeta string) error {
 
-	log.Println("Publishing:", file)
+	lk.Log("Publishing:", file)
 
 	f, err := os.Open(file)
 	if err != nil {
@@ -81,10 +116,5 @@ func (nr *NatsReader) Publish(file, fwMeta string) error {
 	// merge file watcher meta & nats reader meta
 	meta := jt.MergeSgl(fwMeta, nr.exMeta())
 	ext := filepath.Ext(file)
-
-	if fn, ok := mFn[ext]; ok {
-		return fn(nr.js, nr.subject, f, meta)
-	}
-
-	return fmt.Errorf("<%s> file type is NOT supported", ext)
+	return pubMethod(ext)(nr.js, nr.subject, f, meta)
 }

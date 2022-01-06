@@ -97,7 +97,7 @@ AGAIN:
 				msgs, _ := sub.Fetch(128, nats.Context(ctx))
 				for _, msg := range msgs {
 					msg.Ack()
-					receive(msg.Data)
+					receive(msg)
 				}
 			}
 		}()
@@ -106,6 +106,11 @@ AGAIN:
 	goto AGAIN
 }
 
-func receive(data []byte) {
-	fmt.Println(string(jt.Fmt(data, "  ")))
+func receive(msg *nats.Msg) {
+	switch msg.Header["Format"][0] {
+	case "json":
+		fmt.Println(string(jt.Fmt(msg.Data, "  ")))
+	default:
+		fmt.Println(string(msg.Data))
+	}
 }

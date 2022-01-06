@@ -7,6 +7,7 @@ require (
 	github.com/digisan/cli-prompt v0.0.4
 	github.com/digisan/gotk v0.0.46
 	github.com/digisan/json-tool v0.0.33
+	github.com/digisan/logkit v0.0.4
 	github.com/nats-io/nats.go v1.13.0
 	github.com/pkg/errors v0.9.1
 	github.com/radovskyb/watcher v1.0.7
@@ -15,7 +16,6 @@ require (
 require (
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/digisan/go-generics v0.0.8 // indirect
-	github.com/digisan/logkit v0.0.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gookit/color v1.5.0 // indirect
 	github.com/nats-io/nats-server/v2 v2.4.0 // indirect
