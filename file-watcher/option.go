@@ -57,6 +57,23 @@ func OptName(name string) Option {
 	}
 }
 
+// const (
+// 	UnknownKind EmFileKind = "unknown file kind"
+// 	Resource    EmFileKind = "resource"
+// 	Query       EmFileKind = "query"
+// 	Command     EmFileKind = "command"
+// )
+func OptKind(kind EmFileKind) Option {
+	return func(w *Watcher) error {
+		if kind != "" {
+			w.kind = kind
+			return nil
+		}
+		w.kind = Resource
+		return nil
+	}
+}
+
 // "|" as separator, like "json|xml|csv"
 func OptFormat(format string) Option {
 	return func(w *Watcher) error {

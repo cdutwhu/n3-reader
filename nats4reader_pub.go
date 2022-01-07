@@ -105,7 +105,7 @@ func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) err
 
 func (nr *NatsReader) Publish(file, fwMeta string) error {
 
-	lk.Log("Publishing:", file)
+	lk.Log("Publishing: %s", file)
 
 	f, err := os.Open(file)
 	if err != nil {

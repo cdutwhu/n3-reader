@@ -1,5 +1,7 @@
 {
     "ID": "",
+    "Kind": "",
+    "_Kind": "What is inbound file used for? Resource, Query or Command?",
     "Format": "json|xml|csv|run|go",
     "ReaderName": "",
     "WatchFolder": "",

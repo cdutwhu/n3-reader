@@ -13,9 +13,10 @@ import (
 )
 
 type Watcher struct {
-	id         string   // meta
-	name       string   // meta
-	format     []string // meta
+	id         string     // meta
+	name       string     // meta
+	kind       EmFileKind // meta
+	format     []string   // meta
 	folder     string
 	fileExt    string
 	recursive  bool
@@ -32,14 +33,18 @@ func (w *Watcher) Name() string     { return w.name }
 func (w *Watcher) Format() []string { return w.format }
 func (w *Watcher) Folder() string   { return w.folder }
 func (w *Watcher) FileExt() string  { return w.fileExt }
-func (w *Watcher) meta(file string) string {
+
+func (w *Watcher) meta(file string, filekind EmFileKind) string {
+	fileType := getFileType(file)
 	return fmt.Sprintf(`{
 		"ReaderID": "%s",
-		"ReaderName": "%s",
+		"ReaderName": "%s",		
+		"Kind": "%v",
+		"Type": "%v",
 		"Format": "%s",				
 		"Source":"%s",		
 		"ReadTimestampUTC":"%s"
-	}`, w.id, w.name, w.format, filepath.Base(file), time.Now().UTC().Format(time.RFC3339))
+	}`, w.id, w.name, filekind, fileType, w.format, filepath.Base(file), time.Now().UTC().Format(time.RFC3339))
 }
 
 func NewFileWatcher(options ...Option) (*Watcher, error) {
@@ -75,7 +80,7 @@ func (w *Watcher) start() error {
 				if !event.IsDir() {
 					var (
 						path = event.Path
-						meta = w.meta(event.Path)
+						meta = w.meta(event.Path, w.kind)
 					)
 					if HasAnySuffix(path, w.format...) { // only interested in specific format
 						switch event.Op {

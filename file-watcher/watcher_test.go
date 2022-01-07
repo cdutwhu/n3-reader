@@ -10,6 +10,7 @@ func TestNewFileReader(t *testing.T) {
 	opts := []Option{
 		OptID(""),
 		OptFormat("json"),
+		OptKind(Resource),
 		OptName("Reader"),
 		OptWatcher("", "json", "1s", false, false, "", true),
 	}
