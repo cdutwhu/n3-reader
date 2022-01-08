@@ -20,6 +20,10 @@ const (
 	Command     EmFileKind = "command"
 )
 
+func (fk EmFileKind) String() string {
+	return string(fk)
+}
+
 const (
 	UnknownType EmFileType = "unknown file type"
 	Text        EmFileType = "text"
@@ -30,6 +34,10 @@ const (
 	Binary      EmFileType = "binary"
 	Deleted     EmFileType = "deleted"
 )
+
+func (ft EmFileType) String() string {
+	return string(ft)
+}
 
 var (
 	mContType = map[string]EmFileType{

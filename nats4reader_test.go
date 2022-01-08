@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	fw "github.com/cdutwhu/n3-reader/file-watcher"
+	lk "github.com/digisan/logkit"
 )
 
 func TestNewN3Reader(t *testing.T) {
@@ -26,7 +27,7 @@ func TestNewN3Reader(t *testing.T) {
 		fw.OptWatcher("", "json", "100ms", false, false, "", true),
 	}
 	fw, err := fw.NewFileWatcher(optsFR...)
-	Check(err)
+	lk.FailOnErr("%v", err)
 
 	opts := []Option{
 		OptNatsHost(""),
@@ -36,7 +37,7 @@ func TestNewN3Reader(t *testing.T) {
 		OptSubject("ABC.created"),
 	}
 	nr, err := NewNats4Reader(opts...)
-	Check(err)
+	lk.FailOnErr("%v", err)
 
 	fw.Event = NewReaderEvent(nr)
 	fw.StartWait(prepare, cleanup)

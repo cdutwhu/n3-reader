@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	. "github.com/cdutwhu/n3-reader"
 	fw "github.com/cdutwhu/n3-reader/file-watcher"
 	cp "github.com/digisan/cli-prompt"
+	lk "github.com/digisan/logkit"
 	"github.com/pkg/errors"
 )
 
@@ -20,21 +20,21 @@ func S(name string) string {
 	if v, ok := mc[name]; ok {
 		return v.(string)
 	}
-	log.Fatalf("No argument [%s] in config file\n", name)
+	lk.Log("No argument [%s] in config file\n", name)
 	return ""
 }
 func B(name string) bool {
 	if v, ok := mc[name]; ok {
 		return v.(bool)
 	}
-	log.Fatalf("No argument [%s] in config file\n", name)
+	lk.Log("No argument [%s] in config file\n", name)
 	return false
 }
 func I(name string) int {
 	if v, ok := mc[name]; ok {
 		return int(v.(float64))
 	}
-	log.Fatalf("No argument [%s] in config file\n", name)
+	lk.Log("No argument [%s] in config file\n", name)
 	return 0
 }
 
@@ -45,7 +45,7 @@ func main() {
 
 	mc, err = cp.PromptConfig(*configPtr)
 	if err != nil {
-		log.Fatalln(errors.Wrap(err, "Invalid config file as JSON format"))
+		lk.Log("%v", errors.Wrap(err, "Invalid config file as JSON format"))
 	}
 
 	if mc != nil {
@@ -81,10 +81,11 @@ func main() {
 			fw.OptID(S("ID")),
 			fw.OptFormat(S("Format")),
 			fw.OptName(S("ReaderName")),
+			fw.OptKind(S("Kind")),
 			fw.OptWatcher(S("WatchFolder"), "", S("Interval"), B("Recursive"), B("InclHidden"), S("Ignore"), B("AutoDelete")),
 		}
 		fw, err := fw.NewFileWatcher(optsFW...)
-		Check(err)
+		lk.FailOnErr("%v", err)
 
 		opts := []Option{
 			OptNatsHost(S("NatsHost")),
@@ -94,11 +95,11 @@ func main() {
 			OptSubject(S("Stream") + "." + S("Subject")),
 
 			// extention use for otf-reader, etc...
-			OptKeyValue("Provider", "test-provider"),
+			OptKeyValue("User", "test-user"),     // test, should be meta out
 			OptKeyValue("provider-1", "test-provider-1"), // test, should not be meta out
 		}
 		nr, err := NewNats4Reader(opts...)
-		Check(err)
+		lk.FailOnErr("%v", err)
 
 		fw.Event = NewReaderEvent(nr)
 		fw.StartWait(prepare, cleanup)

@@ -3,16 +3,16 @@ package n3reader
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"unicode"
 
 	jt "github.com/digisan/json-tool"
+	lk "github.com/digisan/logkit"
 	"github.com/nats-io/nats.go"
 )
 
 type NatsReader struct {
-	host           string                // option,    meta
-	port           int                   // option,    meta
+	host           string                // option,    no meta
+	port           int                   // option,    no meta
 	stream         string                // option,    meta
 	streamSubjects string                // option,    no meta
 	subject        string                // option,    meta
@@ -24,19 +24,13 @@ type NatsReader struct {
 }
 
 func (nr *NatsReader) meta() string {
-
-	// keep an eye on last comma
-	return fmt.Sprintf(`{
-		"NatsHost": "%s",
-		"NatsPort": "%5d",
-		"Stream": "%s",
-		"Subject": "%s"
-	}`,
-		nr.host,
-		nr.port,
-		nr.stream,
-		nr.subject,
-	)
+	m := map[string]interface{}{
+		"Stream":  nr.stream,
+		"Subject": nr.subject,
+	}
+	data, err := json.Marshal(m)
+	lk.FailOnErr("%v", err)
+	return string(data)
 }
 
 func (nr *NatsReader) exMeta() string {
@@ -48,12 +42,9 @@ func (nr *NatsReader) exMeta() string {
 			m[k] = v
 		}
 	}
-
-	bytes, err := json.Marshal(m)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return jt.MergeSgl(nr.meta(), string(bytes))
+	data, err := json.Marshal(m)
+	lk.FailOnErr("%v", err)
+	return jt.MergeSgl(nr.meta(), string(data))
 }
 
 func (nr *NatsReader) initNatsJS() (err error) {
@@ -70,11 +61,11 @@ func (nr *NatsReader) initNatsJS() (err error) {
 
 	// check if the stream already exists; if not, create it
 	stream, err := nr.js.StreamInfo(nr.stream)
-	if err != nil {
-		log.Println(err) // notice 'not found, ready to create a new one'
-	}
+
+	lk.LogWhen(err != nil, "%v", err) // notice 'not found, ready to create a new one'
+
 	if stream == nil {
-		log.Printf("creating stream %q and subjects %q", nr.stream, nr.streamSubjects)
+		lk.Log("creating stream %q and subjects %q", nr.stream, nr.streamSubjects)
 		_, err = nr.js.AddStream(
 			&nats.StreamConfig{
 				Name:     nr.stream,

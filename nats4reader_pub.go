@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,7 +54,7 @@ func publish(js nats.JetStreamContext, subj string, header nats.Header, data []b
 	if err != nil {
 		return err
 	}
-	log.Println("ACK:", ack.Stream)
+	lk.Log("ACK: %s", ack.Stream)
 	return err
 }
 
@@ -83,11 +82,11 @@ func pubJson(js nats.JetStreamContext, subj string, f *os.File, meta string) err
 	defer cancel()
 
 	cOut, arr := jt.ScanObject(ctx, f, false, true, jt.OUT_ORI)
-	log.Println(hint[arr])
+	lk.Log("%s", hint[arr])
 
 	for result := range cOut {
 		if result.Err != nil {
-			log.Println(result.Err)
+			lk.Warn("%v", result.Err)
 			return result.Err
 		}
 

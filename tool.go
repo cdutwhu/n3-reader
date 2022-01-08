@@ -1,18 +1,11 @@
 package n3reader
 
 import (
-	"log"
 	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 )
-
-func Check(err error) {
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
 
 func SetIfValidStr(s *string, val string, f func(subject string) (bool, error)) error {
 	ok, err := f(val)
@@ -56,5 +49,5 @@ func ValidateNatsSubject(subject string) (bool, error) {
 	if valid {
 		return valid, nil
 	}
-	return false, errors.New("Nats topic must be alphanumeric only, can also contain (but not start or end with) period ( . ) as token delimiter.")
+	return false, errors.New("NATS topic must be alphanumeric only, can also contain (but not start or end with) period ( . ) as token delimiter.")
 }

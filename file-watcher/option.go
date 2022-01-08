@@ -63,13 +63,13 @@ func OptName(name string) Option {
 // 	Query       EmFileKind = "query"
 // 	Command     EmFileKind = "command"
 // )
-func OptKind(kind EmFileKind) Option {
+func OptKind(kind string) Option {
 	return func(w *Watcher) error {
 		if kind != "" {
-			w.kind = kind
+			w.fileKind = EmFileKind(kind)
 			return nil
 		}
-		w.kind = Resource
+		w.fileKind = Resource
 		return nil
 	}
 }

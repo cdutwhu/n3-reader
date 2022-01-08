@@ -1,6 +1,7 @@
 package filewatcher
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -13,19 +14,20 @@ import (
 )
 
 type Watcher struct {
-	id         string     // meta
-	name       string     // meta
-	kind       EmFileKind // meta
-	format     []string   // meta
-	folder     string
-	fileExt    string
-	recursive  bool
-	inclHidden bool
-	ignore     string
-	autodel    bool
-	watcher    *watcher.Watcher
-	interval   time.Duration
-	Event      IWatchEvent
+	id         string           // meta
+	name       string           // meta
+	fileKind   EmFileKind       // meta
+	fileType   EmFileType       // meta
+	format     []string         // no meta
+	folder     string           // no meta
+	fileExt    string           // meta
+	recursive  bool             // no meta
+	inclHidden bool             // no meta
+	ignore     string           // no meta
+	autodel    bool             // no meta
+	watcher    *watcher.Watcher // no meta
+	interval   time.Duration    // no meta
+	Event      IWatchEvent      // no meta
 }
 
 func (w *Watcher) Id() string       { return w.id }
@@ -35,16 +37,19 @@ func (w *Watcher) Folder() string   { return w.folder }
 func (w *Watcher) FileExt() string  { return w.fileExt }
 
 func (w *Watcher) meta(file string, filekind EmFileKind) string {
-	fileType := getFileType(file)
-	return fmt.Sprintf(`{
-		"ReaderID": "%s",
-		"ReaderName": "%s",		
-		"Kind": "%v",
-		"Type": "%v",
-		"Format": "%s",				
-		"Source":"%s",		
-		"ReadTimestampUTC":"%s"
-	}`, w.id, w.name, filekind, fileType, w.format, filepath.Base(file), time.Now().UTC().Format(time.RFC3339))
+	w.fileType = getFileType(file)
+	m := map[string]interface{}{
+		"ReaderID":         w.id,
+		"ReaderName":       w.name,
+		"FileKind":         w.fileKind.String(),
+		"FileType":         w.fileType.String(),
+		"Format":           filepath.Ext(file),
+		"Source":           filepath.Base(file),
+		"ReadTimestampUTC": time.Now().UTC().Format(time.RFC3339),
+	}
+	data, err := json.Marshal(m)
+	lk.FailOnErr("%v", err)
+	return string(data)
 }
 
 func NewFileWatcher(options ...Option) (*Watcher, error) {
@@ -80,7 +85,7 @@ func (w *Watcher) start() error {
 				if !event.IsDir() {
 					var (
 						path = event.Path
-						meta = w.meta(event.Path, w.kind)
+						meta = w.meta(event.Path, w.fileKind)
 					)
 					if HasAnySuffix(path, w.format...) { // only interested in specific format
 						switch event.Op {
