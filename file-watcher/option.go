@@ -144,7 +144,7 @@ func OptWatcher(folder string, suffix string, interval string, recursive bool, i
 			r := regexp.MustCompile("([^\\s]+(\\.(?i)(" + trimSuffix + "))$)")
 			w.watcher.AddFilterHook(watcher.RegexFilterHook(r, false))
 		}
-		w.fileExt = suffix
+		// w.fileExt = suffix
 
 		// Add the watch folder specified.
 		if recursive {

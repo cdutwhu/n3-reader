@@ -1,6 +1,7 @@
 package filewatcher
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -17,10 +18,8 @@ type Watcher struct {
 	id         string           // meta
 	name       string           // meta
 	fileKind   EmFileKind       // meta
-	fileType   EmFileType       // meta
 	format     []string         // no meta
 	folder     string           // no meta
-	fileExt    string           // meta
 	recursive  bool             // no meta
 	inclHidden bool             // no meta
 	ignore     string           // no meta
@@ -34,15 +33,14 @@ func (w *Watcher) Id() string       { return w.id }
 func (w *Watcher) Name() string     { return w.name }
 func (w *Watcher) Format() []string { return w.format }
 func (w *Watcher) Folder() string   { return w.folder }
-func (w *Watcher) FileExt() string  { return w.fileExt }
 
 func (w *Watcher) meta(file string, filekind EmFileKind) string {
-	w.fileType = getFileType(file)
 	m := map[string]interface{}{
 		"ReaderID":         w.id,
 		"ReaderName":       w.name,
 		"FileKind":         w.fileKind.String(),
-		"FileType":         w.fileType.String(),
+		"FileType":         FileType(file).String(),
+		"FileMD5":          FileHash(file, md5.New()),
 		"Format":           filepath.Ext(file),
 		"Source":           filepath.Base(file),
 		"ReadTimestampUTC": time.Now().UTC().Format(time.RFC3339),

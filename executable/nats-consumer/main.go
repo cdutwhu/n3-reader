@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
 	"flag"
 	"fmt"
+	"io"
 	"sync"
 	"time"
 
@@ -97,10 +100,21 @@ AGAIN:
 	goto AGAIN
 }
 
+func chkHashMD5(msg *nats.Msg) bool {
+	md5str := msg.Header["FileMD5"][0]
+	// fmt.Println("md5str in header:", md5str)
+	h := md5.New()
+	_, err = io.Copy(h, bytes.NewReader(msg.Data))
+	lk.FailOnErr("%v", err)
+	return fmt.Sprintf("%x", h.Sum(nil)) == md5str
+}
+
 func receive(msg *nats.Msg) {
 
+	lk.WarnOnErrWhen(!chkHashMD5(msg), "%v", "Hash MD5 is NOT correct")
+
 	format := msg.Header["Format"][0]
-	fmt.Println(format)
+	// fmt.Println(format)
 
 	switch format {
 	case ".json":

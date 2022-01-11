@@ -9,20 +9,8 @@ import (
 )
 
 type (
-	EmFileKind string
 	EmFileType string
 )
-
-const (
-	UnknownKind EmFileKind = "unknown file kind"
-	Resource    EmFileKind = "resource"
-	Query       EmFileKind = "query"
-	Command     EmFileKind = "command"
-)
-
-func (fk EmFileKind) String() string {
-	return string(fk)
-}
 
 const (
 	UnknownType EmFileType = "unknown file type"
@@ -53,7 +41,7 @@ var (
 	}
 )
 
-func getFileType(file string) EmFileType {
+func FileType(file string) EmFileType {
 
 	if !fd.FileExists(file) {
 		return Deleted
