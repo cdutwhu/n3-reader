@@ -17,6 +17,11 @@ func NewReaderEvent(nr *NatsReader) *ReaderEvent {
 }
 
 func (evt *ReaderEvent) OnCreate(path, fwMeta string, t time.Time) error {
+
+	///
+	// TODO: split file to parts if file size is bigger
+	///
+
 	return evt.Publish(path, fwMeta)
 }
 

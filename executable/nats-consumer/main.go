@@ -10,32 +10,33 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	cp "github.com/digisan/cli-prompt"
 	jt "github.com/digisan/json-tool"
 	lk "github.com/digisan/logkit"
 	"github.com/nats-io/nats.go"
 )
 
-var mc map[string]interface{}
+var mCfg map[string]interface{}
 var err error
 
-// use outter mc
+// use outter mCfg
 func S(name string) string {
-	if v, ok := mc[name]; ok {
+	if v, ok := mCfg[name]; ok {
 		return v.(string)
 	}
 	lk.Log("No argument [%s] in config file\n", name)
 	return ""
 }
 func B(name string) bool {
-	if v, ok := mc[name]; ok {
+	if v, ok := mCfg[name]; ok {
 		return v.(bool)
 	}
 	lk.Log("No argument [%s] in config file\n", name)
 	return false
 }
 func I(name string) int {
-	if v, ok := mc[name]; ok {
+	if v, ok := mCfg[name]; ok {
 		return int(v.(float64))
 	}
 	lk.Log("No argument [%s] in config file\n", name)
@@ -47,10 +48,10 @@ func main() {
 	configPtr := flag.String("c", "./config.json", "config(json) file path")
 	flag.Parse()
 
-	mc, err = cp.PromptConfig(*configPtr)
+	mCfg, err = cp.PromptConfig(*configPtr)
 	lk.FailOnErr("Invalid JSON config file@ [%v]", err)
 
-	if mc != nil {
+	if mCfg != nil {
 		fmt.Println("Running...")
 	}
 
@@ -78,8 +79,10 @@ AGAIN:
 	func() {
 		ctx, cancel := context.WithTimeout(context.Background(), duration)
 		defer cancel()
+
 		wg := sync.WaitGroup{}
 		wg.Add(1)
+
 		go func() {
 			defer wg.Done()
 			for {
@@ -90,8 +93,11 @@ AGAIN:
 				}
 				msgs, _ := sub.Fetch(128, nats.Context(ctx))
 				for _, msg := range msgs {
-					msg.Ack()
-					receive(msg)
+					if err := msg.Ack(); err == nil {
+						receive(msg)
+					} else {
+						lk.Warn("%v", err)
+					}
 				}
 			}
 		}()
@@ -111,7 +117,17 @@ func chkHashMD5(msg *nats.Msg) bool {
 
 func receive(msg *nats.Msg) {
 
-	lk.WarnOnErrWhen(!chkHashMD5(msg), "%v", "Hash MD5 is NOT correct")
+	///
+	// Dump Header
+	fmt.Printf("\n-------------------------------------------------------------------\n")
+	spew.Dump(msg.Header)
+	fmt.Printf("-------------------------------------------------------------------\n\n")
+	///
+
+	if !chkHashMD5(msg) {
+		lk.Warn("%v", "Hash MD5 is NOT correct")
+		return
+	}
 
 	format := msg.Header["Format"][0]
 	// fmt.Println(format)
